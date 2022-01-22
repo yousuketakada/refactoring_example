@@ -3,10 +3,8 @@
     "configurePresets":
     [
         {
-            "name": "vs2019",
-            "generator": "Visual Studio 16 2019",
-            "architecture": "x64",
-            "toolset": "host=x64",
+            "name": "ninja",
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build"
         }
     ]
