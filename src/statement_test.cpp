@@ -24,9 +24,7 @@ void assert_equal(const std::string& expected, const std::string& actual)
 
 void statement_test()
 {
-    // const auto actual = statement("World"s);
     const auto actual = statement("Refactoring"s);
-
     const auto expected = "Hello, Refactoring!\n"s;
 
     assert_equal(expected, actual);
