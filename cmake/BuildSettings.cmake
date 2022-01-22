@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
 if (MSVC)
+    add_compile_options(/FC)
     add_compile_options(/utf-8)
     add_compile_options(/W4)
     add_compile_options(/permissive-)
