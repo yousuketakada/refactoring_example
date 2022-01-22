@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(refactoring_a_first_example_cpp)
+project(refactoring_example)
 
 enable_testing()
 
