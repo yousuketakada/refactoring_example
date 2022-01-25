@@ -11,12 +11,18 @@ target_sources(
     PUBLIC
         statement.h
     PRIVATE
-        pch.h pch.cpp statement.cpp)
+        pch.h
+        pch.cpp
+        statement.cpp
+)
 
 target_sources(
     statement_test
     PRIVATE
-        pch.h pch.cpp statement_test.cpp)
+        pch.h
+        pch.cpp
+        statement_test.cpp
+)
 
 target_precompile_headers(statement PRIVATE pch.h)
 target_precompile_headers(statement_test REUSE_FROM statement)
