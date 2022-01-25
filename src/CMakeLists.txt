@@ -1,9 +1,10 @@
 add_library(statement STATIC)
 add_executable(statement_test)
 
-add_test(NAME run_statement_test COMMAND statement_test)
+target_link_libraries(statement_test statement gtest_main)
 
-target_link_libraries(statement_test statement)
+include(GoogleTest)
+gtest_discover_tests(statement_test)
 
 target_sources(
     statement
