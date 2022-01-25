@@ -15,7 +15,7 @@ endif ()
 include(FetchContent)
 FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/7eae8de0da5774fa08ce350d9d470901b76b2834.zip
+    URL https://github.com/google/googletest/archive/f45d5865ed0b2b8912244627cdf508a24cc6ccb4.zip
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
