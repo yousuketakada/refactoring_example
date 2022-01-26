@@ -4,10 +4,10 @@
 
 namespace {
 
-std::string usd(int amount)
+auto usd(int amount)
 {
     std::ostringstream oss;
-    oss.imbue(std::locale{"en_US"});
+    oss.imbue(std::locale{"en_US"s});
     oss << std::showbase << std::put_money(amount);
     return std::move(oss).str();
 }
