@@ -52,20 +52,20 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         return volume_credits;
     };
 
-    auto total_volume_credits = [&]()
-    {
-        int total = 0;
-        for (const auto& perf : invoice.performances) {
-            total += volume_credits_for(perf);
-        }
-        return total;
-    };
-
     auto total_amount = [&]()
     {
         int total = 0;
         for (const auto& perf : invoice.performances) {
             total += amount_for(perf);
+        }
+        return total;
+    };
+
+    auto total_volume_credits = [&]()
+    {
+        int total = 0;
+        for (const auto& perf : invoice.performances) {
+            total += volume_credits_for(perf);
         }
         return total;
     };
