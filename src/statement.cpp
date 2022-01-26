@@ -52,20 +52,26 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         return volume_credits;
     };
 
+    auto total_volume_credits = [&]()
+    {
+        int volume_credits = 0;
+        for (const auto& perf : invoice.performances) {
+            volume_credits += volume_credits_for(perf);
+        }
+        return volume_credits;
+    };
+
     int total_amount = 0;
-    int volume_credits = 0;
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"s, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        volume_credits += volume_credits_for(perf);
-
         // print line for this order
         oss << std::format("  {}: {} ({} seats)\n"s, play_for(perf).name, usd(amount_for(perf)), perf.audience);
         total_amount += amount_for(perf);
     }
 
     oss << std::format("Amount owed is {}\n"s, usd(total_amount));
-    oss << std::format("You earned {} credits\n"s, volume_credits);
+    oss << std::format("You earned {} credits\n"s, total_volume_credits());
     return std::move(oss).str();
 }
