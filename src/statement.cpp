@@ -44,16 +44,21 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         return amount;
     };
 
+    auto volume_credits_for = [&](const auto& perf)
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.audience - 30, 0);
+        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
+        return volume_credits;
+    };
+
     int total_amount = 0;
     int volume_credits = 0;
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"s, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        // add volume credits
-        volume_credits += std::max(perf.audience - 30, 0);
-        // add extra credit for every ten comedy attendees
-        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
+        volume_credits += volume_credits_for(perf);
 
         // print line for this order
         oss << std::format("  {}: {} ({} seats)\n"s, play_for(perf).name, usd(amount_for(perf)), perf.audience);
