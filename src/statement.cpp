@@ -16,6 +16,11 @@ auto usd(int amount)
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
     auto amount_for = [](const auto& perf, const auto& play)
     {
         int amount = 0;
@@ -45,7 +50,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"s, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        const auto& play = plays.at(perf.play_id);
+        const auto& play = play_for(perf);
         int this_amount = amount_for(perf, play);
 
         // add volume credits
