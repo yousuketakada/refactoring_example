@@ -50,16 +50,15 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"s, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        const auto& play = play_for(perf);
-        int this_amount = amount_for(perf, play);
+        int this_amount = amount_for(perf, play_for(perf));
 
         // add volume credits
         volume_credits += std::max(perf.audience - 30, 0);
         // add extra credit for every ten comedy attendees
-        if (Play::Type::Comedy == play.type) { volume_credits += perf.audience / 5; }
+        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
 
         // print line for this order
-        oss << std::format("  {}: {} ({} seats)\n"s, play.name, usd(this_amount), perf.audience);
+        oss << std::format("  {}: {} ({} seats)\n"s, play_for(perf).name, usd(this_amount), perf.audience);
         total_amount += this_amount;
     }
 
