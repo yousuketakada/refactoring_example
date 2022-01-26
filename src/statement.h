@@ -12,14 +12,14 @@ struct Play
     Type type;
 };
 
-struct Performance
-{
-    std::string play_id;
-    int audience;
-};
-
 struct Invoice
 {
+    struct Performance
+    {
+        std::string play_id;
+        int audience;
+    };
+
     std::string customer;
     std::vector<Performance> performances;
 };
