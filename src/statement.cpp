@@ -21,10 +21,10 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         return plays.at(perf.play_id);
     };
 
-    auto amount_for = [](const auto& perf, const auto& play)
+    auto amount_for = [&](const auto& perf)
     {
         int amount = 0;
-        switch (play.type) {
+        switch (play_for(perf).type) {
         case Play::Type::Tragedy:
             amount = 40000;
             if (perf.audience > 30) {
@@ -39,7 +39,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
             amount += 300 * perf.audience;
             break;
         default:
-            throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(play.type))};
+            throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(play_for(perf).type))};
         }
         return amount;
     };
@@ -50,7 +50,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"s, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        int this_amount = amount_for(perf, play_for(perf));
+        int this_amount = amount_for(perf);
 
         // add volume credits
         volume_credits += std::max(perf.audience - 30, 0);
