@@ -16,15 +16,9 @@ auto usd(int amount)
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    int total_amount = 0;
-    int volume_credits = 0;
-    std::ostringstream oss;
-    oss << std::format("Statement for {}\n"s, invoice.customer);
-
-    for (const auto& perf : invoice.performances) {
-        const auto& play = plays.at(perf.play_id);
+    auto amount_for = [](const auto& perf, const auto& play)
+    {
         int this_amount = 0;
-
         switch (play.type) {
         case Play::Type::Tragedy:
             this_amount = 40000;
@@ -42,6 +36,17 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         default:
             throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(play.type))};
         }
+        return this_amount;
+    };
+
+    int total_amount = 0;
+    int volume_credits = 0;
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"s, invoice.customer);
+
+    for (const auto& perf : invoice.performances) {
+        const auto& play = plays.at(perf.play_id);
+        int this_amount = amount_for(perf, play);
 
         // add volume credits
         volume_credits += std::max(perf.audience - 30, 0);
