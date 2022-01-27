@@ -91,8 +91,8 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     const StatementData statement_data{
-        invoice.customer,
-        invoice.performances,
+        .customer = invoice.customer,
+        .performances = invoice.performances
     };
 
     return render_plain_text(statement_data, plays);
