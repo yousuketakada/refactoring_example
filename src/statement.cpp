@@ -15,9 +15,10 @@ auto usd(int amount)
 struct StatementData
 {
     const std::string& customer;
+    const std::vector<Invoice::Performance>& performances;
 };
 
-std::string render_plain_text(const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
+std::string render_plain_text(const StatementData& data, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
@@ -58,7 +59,7 @@ std::string render_plain_text(const StatementData& data, const Invoice& invoice,
     auto total_amount = [&]()
     {
         int total = 0;
-        for (const auto& perf : invoice.performances) {
+        for (const auto& perf : data.performances) {
             total += amount_for(perf);
         }
         return total;
@@ -67,7 +68,7 @@ std::string render_plain_text(const StatementData& data, const Invoice& invoice,
     auto total_volume_credits = [&]()
     {
         int total = 0;
-        for (const auto& perf : invoice.performances) {
+        for (const auto& perf : data.performances) {
             total += volume_credits_for(perf);
         }
         return total;
@@ -76,7 +77,7 @@ std::string render_plain_text(const StatementData& data, const Invoice& invoice,
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"s, data.customer);
 
-    for (const auto& perf : invoice.performances) {
+    for (const auto& perf : data.performances) {
         oss << std::format("  {}: {} ({} seats)\n"s, play_for(perf).name, usd(amount_for(perf)), perf.audience);
     }
 
@@ -91,7 +92,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 {
     const StatementData statement_data{
         invoice.customer,
+        invoice.performances,
     };
 
-    return render_plain_text(statement_data, invoice, plays);
+    return render_plain_text(statement_data, plays);
 }
