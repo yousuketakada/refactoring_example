@@ -36,3 +36,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 {
     return render_plain_text(make_statement_data(invoice, plays));
 }
+
+std::string html_statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    // TODO
+    return {};
+}

@@ -25,3 +25,4 @@ struct Invoice
 };
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
+std::string html_statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
