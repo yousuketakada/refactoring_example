@@ -12,9 +12,12 @@ auto usd(int amount)
     return std::move(oss).str();
 }
 
-struct StatementData {};
+struct StatementData
+{
+    const std::string& customer;
+};
 
-std::string render_plain_text([[maybe_unused]] const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
+std::string render_plain_text(const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
@@ -71,7 +74,7 @@ std::string render_plain_text([[maybe_unused]] const StatementData& data, const 
     };
 
     std::ostringstream oss;
-    oss << std::format("Statement for {}\n"s, invoice.customer);
+    oss << std::format("Statement for {}\n"s, data.customer);
 
     for (const auto& perf : invoice.performances) {
         oss << std::format("  {}: {} ({} seats)\n"s, play_for(perf).name, usd(amount_for(perf)), perf.audience);
@@ -86,6 +89,9 @@ std::string render_plain_text([[maybe_unused]] const StatementData& data, const 
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    const StatementData statement_data;
+    const StatementData statement_data{
+        invoice.customer,
+    };
+
     return render_plain_text(statement_data, invoice, plays);
 }
