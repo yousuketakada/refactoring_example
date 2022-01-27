@@ -5,7 +5,7 @@ A C++ project for the first refactoring example of Fowler (2018).
 ## How to configure, build, and test
 
 ```bash
-$ cmake --preset ninja
+$ cmake --preset ninja -D CMAKE_BUILD_TYPE=Debug
 $ cmake --build build
 $ ctest --test-dir build --output-on-failure
 ```
