@@ -12,7 +12,9 @@ auto usd(int amount)
     return std::move(oss).str();
 }
 
-std::string render_plain_text(const Invoice& invoice, const std::map<std::string, Play>& plays)
+struct StatementData {};
+
+std::string render_plain_text([[maybe_unused]] const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
@@ -84,5 +86,6 @@ std::string render_plain_text(const Invoice& invoice, const std::map<std::string
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    return render_plain_text(invoice, plays);
+    const StatementData statement_data;
+    return render_plain_text(statement_data, invoice, plays);
 }
