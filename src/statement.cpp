@@ -98,23 +98,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     std::vector<EnrichedPerformance> enriched_performances;
     std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
 
-    auto total_amount = [&]()
-    {
-        int total = 0;
-        for (const auto& perf : enriched_performances) {
-            total += perf.amount;
-        }
-        return total;
-    } ();
-
-    auto total_volume_credits = [&]()
-    {
-        int total = 0;
-        for (const auto& perf : enriched_performances) {
-            total += perf.volume_credits;
-        }
-        return total;
-    } ();
+    auto total_amount = std::accumulate(std::cbegin(enriched_performances), std::cend(enriched_performances), 0, [](int sum, const auto& perf) { return sum + perf.amount; });
+    auto total_volume_credits = std::accumulate(std::cbegin(enriched_performances), std::cend(enriched_performances), 0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
 
     const StatementData statement_data{
         .customer = invoice.customer,
