@@ -4,7 +4,7 @@
 
 struct EnrichedPerformance
 {
-    const Invoice::Performance& base;
+    const Performance& base;
     const Play& play;
     int amount;
     int volume_credits;
