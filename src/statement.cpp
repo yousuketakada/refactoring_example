@@ -28,25 +28,7 @@ struct StatementData
     int total_volume_credits{};
 };
 
-std::string render_plain_text(const StatementData& data)
-{
-    std::ostringstream oss;
-    oss << std::format("Statement for {}\n"s, data.customer);
-
-    for (const auto& perf : data.performances) {
-        oss << std::format(
-            "  {}: {} ({} seats)\n"s,
-            perf.play.name, usd(perf.amount), perf.base.audience);
-    }
-
-    oss << std::format("Amount owed is {}\n"s, usd(data.total_amount));
-    oss << std::format("You earned {} credits\n"s, data.total_volume_credits);
-    return std::move(oss).str();
-}
-
-}
-
-std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
@@ -111,12 +93,33 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         std::cbegin(enriched_performances), std::cend(enriched_performances),
         0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
 
-    const StatementData statement_data{
+    return StatementData{
         .customer = invoice.customer,
         .performances = std::move(enriched_performances),
         .total_amount = total_amount,
         .total_volume_credits = total_volume_credits
     };
+}
 
-    return render_plain_text(statement_data);
+std::string render_plain_text(const StatementData& data)
+{
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"s, data.customer);
+
+    for (const auto& perf : data.performances) {
+        oss << std::format(
+            "  {}: {} ({} seats)\n"s,
+            perf.play.name, usd(perf.amount), perf.base.audience);
+    }
+
+    oss << std::format("Amount owed is {}\n"s, usd(data.total_amount));
+    oss << std::format("You earned {} credits\n"s, data.total_volume_credits);
+    return std::move(oss).str();
+}
+
+}
+
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    return render_plain_text(make_statement_data(invoice, plays));
 }
