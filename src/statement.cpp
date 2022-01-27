@@ -95,9 +95,9 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    auto enrich_performance = [](const auto& perf)
+    auto enrich_performance = [](const auto& base)
     {
-        return EnrichedPerformance{.base = perf};
+        return EnrichedPerformance{.base = base};
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
