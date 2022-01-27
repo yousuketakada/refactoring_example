@@ -12,9 +12,7 @@ auto usd(int amount)
     return std::move(oss).str();
 }
 
-}
-
-std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+std::string render_plain_text(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
@@ -80,4 +78,11 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Amount owed is {}\n"s, usd(total_amount()));
     oss << std::format("You earned {} credits\n"s, total_volume_credits());
     return std::move(oss).str();
+}
+
+}
+
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    return render_plain_text(invoice, plays);
 }
