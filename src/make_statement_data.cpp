@@ -32,7 +32,15 @@ struct PerformanceCalculator
                 static_cast<int>(play.type))};
         }
         return amount;
-    };
+    }
+
+    int calculate_volume_credits() const
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(performance.audience - 30, 0);
+        if (Play::Type::Comedy == play.type) { volume_credits += performance.audience / 5; }
+        return volume_credits;
+    }
 };
 
 }
@@ -42,14 +50,6 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
         return plays.at(perf.play_id);
-    };
-
-    auto volume_credits_for = [&](const auto& perf)
-    {
-        int volume_credits = 0;
-        volume_credits += std::max(perf.base.audience - 30, 0);
-        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
-        return volume_credits;
     };
 
     auto enrich_performance = [&](const auto& base)
@@ -62,7 +62,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
         };
 
         enriched.amount = calculator.calculate_amount();
-        enriched.volume_credits = volume_credits_for(enriched);
+        enriched.volume_credits = calculator.calculate_volume_credits();
 
         return enriched;
     };
