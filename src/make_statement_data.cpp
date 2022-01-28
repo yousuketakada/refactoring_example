@@ -13,21 +13,7 @@ struct PerformanceData
 class PerformanceCalculator
 {
 public:
-    virtual int amount_for(const PerformanceData& data) const
-    {
-        int amount = 0;
-        switch (data.play.type) {
-        case Play::Type::Tragedy:
-            assert(0);
-            break;
-        case Play::Type::Comedy:
-            assert(0);
-            break;
-        default:
-            assert(0);
-        }
-        return amount;
-    }
+    virtual int amount_for(const PerformanceData& data) const = 0;
 
     virtual int volume_credits_for(const PerformanceData& data) const
     {
