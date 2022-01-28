@@ -21,7 +21,8 @@ target_sources(
 target_sources(
     crt_check
     PRIVATE
-        crt_check.cpp)
+        crt_check.cpp
+)
 
 target_sources(
     statement
