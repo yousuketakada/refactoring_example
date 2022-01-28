@@ -4,20 +4,14 @@
 
 namespace {
 
-struct PerformanceData
-{
-    const Performance& performance;
-    const Play& play;
-};
-
 class PerformanceCalculator
 {
 public:
-    virtual int amount_for(const PerformanceData& data) const = 0;
+    virtual int amount_for(const Performance& performance) const = 0;
 
-    virtual int volume_credits_for(const PerformanceData& data) const
+    virtual int volume_credits_for(const Performance& performance) const
     {
-        return std::max(data.performance.audience - 30, 0);
+        return std::max(performance.audience - 30, 0);
     }
 
 protected:
@@ -26,11 +20,11 @@ protected:
 
 class TragedyPerformanceCalculator : public PerformanceCalculator
 {
-    int amount_for(const PerformanceData& data) const override
+    int amount_for(const Performance& performance) const override
     {
         int amount = 40000;
-        if (data.performance.audience > 30) {
-            amount += 1000 * (data.performance.audience - 30);
+        if (performance.audience > 30) {
+            amount += 1000 * (performance.audience - 30);
         }
         return amount;
     }
@@ -38,20 +32,20 @@ class TragedyPerformanceCalculator : public PerformanceCalculator
 
 class ComedyPerformanceCalculator : public PerformanceCalculator
 {
-    int amount_for(const PerformanceData& data) const override
+    int amount_for(const Performance& performance) const override
     {
         int amount = 30000;
-        if (data.performance.audience > 20) {
-            amount += 10000 + 500 * (data.performance.audience - 20);
+        if (performance.audience > 20) {
+            amount += 10000 + 500 * (performance.audience - 20);
         }
-        amount += 300 * data.performance.audience;
+        amount += 300 * performance.audience;
         return amount;
     }
 
-    int volume_credits_for(const PerformanceData& data) const override
+    int volume_credits_for(const Performance& performance) const override
     {
-        int volume_credits = PerformanceCalculator::volume_credits_for(data);
-        volume_credits += data.performance.audience / 5;
+        int volume_credits = PerformanceCalculator::volume_credits_for(performance);
+        volume_credits += performance.audience / 5;
         return volume_credits;
     }
 };
@@ -83,14 +77,14 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
     auto enrich_performance = [&](const auto& perf)
     {
-        const PerformanceData data{perf, play_for(perf)};
-        const auto& calculator = get_performance_calculator(data.play.type);
+        const auto& play = play_for(perf);
+        const auto& calculator = get_performance_calculator(play.type);
 
         return EnrichedPerformance{
             .base = perf,
-            .play = data.play,
-            .amount = calculator.amount_for(data),
-            .volume_credits = calculator.volume_credits_for(data)
+            .play = play,
+            .amount = calculator.amount_for(perf),
+            .volume_credits = calculator.volume_credits_for(perf)
         };
     };
 
