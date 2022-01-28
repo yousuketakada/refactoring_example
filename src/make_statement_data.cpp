@@ -8,6 +8,31 @@ struct PerformanceCalculator
 {
     const Performance& performance;
     const Play& play;
+
+    int calculate_amount() const
+    {
+        int amount = 0;
+        switch (play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (performance.audience > 30) {
+                amount += 1000 * (performance.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (performance.audience > 20) {
+                amount += 10000 + 500 * (performance.audience - 20);
+            }
+            amount += 300 * performance.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "unknown type: {}"s,
+                static_cast<int>(play.type))};
+        }
+        return amount;
+    };
 };
 
 }
@@ -17,31 +42,6 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto play_for = [&](const auto& perf) -> decltype(auto)
     {
         return plays.at(perf.play_id);
-    };
-
-    auto amount_for = [&](const auto& perf)
-    {
-        int amount = 0;
-        switch (perf.play.type) {
-        case Play::Type::Tragedy:
-            amount = 40000;
-            if (perf.base.audience > 30) {
-                amount += 1000 * (perf.base.audience - 30);
-            }
-            break;
-        case Play::Type::Comedy:
-            amount = 30000;
-            if (perf.base.audience > 20) {
-                amount += 10000 + 500 * (perf.base.audience - 20);
-            }
-            amount += 300 * perf.base.audience;
-            break;
-        default:
-            throw std::runtime_error{std::format(
-                "unknown type: {}"s,
-                static_cast<int>(perf.play.type))};
-        }
-        return amount;
     };
 
     auto volume_credits_for = [&](const auto& perf)
@@ -61,7 +61,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .play = calculator.play
         };
 
-        enriched.amount = amount_for(enriched);
+        enriched.amount = calculator.calculate_amount();
         enriched.volume_credits = volume_credits_for(enriched);
 
         return enriched;
