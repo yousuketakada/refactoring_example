@@ -18,10 +18,7 @@ public:
         int amount = 0;
         switch (data.play.type) {
         case Play::Type::Tragedy:
-            amount = 40000;
-            if (data.performance.audience > 30) {
-                amount += 1000 * (data.performance.audience - 30);
-            }
+            assert(0);
             break;
         case Play::Type::Comedy:
             amount = 30000;
@@ -48,7 +45,18 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyPerformanceCalculator : public PerformanceCalculator {};
+class TragedyPerformanceCalculator : public PerformanceCalculator
+{
+    int amount_for(const PerformanceData& data) const override
+    {
+        int amount = 40000;
+        if (data.performance.audience > 30) {
+            amount += 1000 * (data.performance.audience - 30);
+        }
+        return amount;
+    }
+};
+
 class ComedyPerformanceCalculator : public PerformanceCalculator {};
 
 const PerformanceCalculator& get_performance_calculator(Play::Type type)
