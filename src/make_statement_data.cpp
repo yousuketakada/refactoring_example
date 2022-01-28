@@ -2,6 +2,15 @@
 
 #include "make_statement_data.h"
 
+namespace {
+
+struct PerformanceCalculator
+{
+    const Performance& performance;
+};
+
+}
+
 StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -44,6 +53,8 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
     auto enrich_performance = [&](const auto& base)
     {
+        const PerformanceCalculator calculator{base};
+
         EnrichedPerformance enriched{
             .base = base,
             .play = play_for(base)
