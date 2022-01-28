@@ -17,10 +17,7 @@ public:
 
     virtual int volume_credits_for(const PerformanceData& data) const
     {
-        int volume_credits = 0;
-        volume_credits += std::max(data.performance.audience - 30, 0);
-        if (Play::Type::Comedy == data.play.type) { volume_credits += data.performance.audience / 5; }
-        return volume_credits;
+        return std::max(data.performance.audience - 30, 0);
     }
 
 protected:
@@ -49,6 +46,13 @@ class ComedyPerformanceCalculator : public PerformanceCalculator
         }
         amount += 300 * data.performance.audience;
         return amount;
+    }
+
+    int volume_credits_for(const PerformanceData& data) const override
+    {
+        int volume_credits = PerformanceCalculator::volume_credits_for(data);
+        volume_credits += data.performance.audience / 5;
+        return volume_credits;
     }
 };
 
