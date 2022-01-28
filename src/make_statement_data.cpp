@@ -13,7 +13,7 @@ struct PerformanceData
 class PerformanceCalculator
 {
 public:
-    int amount_for(const PerformanceData& data) const
+    virtual int amount_for(const PerformanceData& data) const
     {
         int amount = 0;
         switch (data.play.type) {
@@ -38,7 +38,7 @@ public:
         return amount;
     }
 
-    int volume_credits_for(const PerformanceData& data) const
+    virtual int volume_credits_for(const PerformanceData& data) const
     {
         int volume_credits = 0;
         volume_credits += std::max(data.performance.audience - 30, 0);
