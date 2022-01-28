@@ -7,6 +7,7 @@ namespace {
 struct PerformanceCalculator
 {
     const Performance& performance;
+    const Play& play;
 };
 
 }
@@ -53,11 +54,11 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
     auto enrich_performance = [&](const auto& base)
     {
-        const PerformanceCalculator calculator{base};
+        const PerformanceCalculator calculator{base, play_for(base)};
 
         EnrichedPerformance enriched{
             .base = base,
-            .play = play_for(base)
+            .play = calculator.play
         };
 
         enriched.amount = amount_for(enriched);
