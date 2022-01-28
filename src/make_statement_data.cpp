@@ -59,6 +59,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     std::ranges::copy(
         invoice.performances | std::views::transform(enrich_performance),
         std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
 
     auto total_amount = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
