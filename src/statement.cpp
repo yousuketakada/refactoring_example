@@ -40,7 +40,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
             this_amount += 300 * perf.audience;
             break;
         default:
-            throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(play.type))};
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"s,
+                static_cast<int>(play.type))};
         }
 
         // add volume credits

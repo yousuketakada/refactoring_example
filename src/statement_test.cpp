@@ -61,7 +61,16 @@ TEST(StatementTest, UnknownType)
         }
     };
 
-    EXPECT_THROW(statement(invoice, plays), std::runtime_error);
+    EXPECT_THROW([&]
+    {
+        try {
+            statement(invoice, plays);
+        }
+        catch (const std::runtime_error& e) {
+            EXPECT_EQ(e.what(), "-1: unknown Play::Type"s);
+            throw;
+        }
+    } (), std::runtime_error);
 }
 
 }
