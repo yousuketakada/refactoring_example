@@ -31,9 +31,7 @@ public:
             amount += 300 * data.performance.audience;
             break;
         default:
-            throw std::runtime_error{std::format(
-                "unknown type: {}"s,
-                static_cast<int>(data.play.type))};
+            assert(0);
         }
         return amount;
     }
@@ -58,10 +56,14 @@ const PerformanceCalculator& get_performance_calculator(Play::Type type)
     switch (type) {
 #define CASE_FOR_PLAY_TYPE(X) \
 case Play::Type::X: { static const X ## PerformanceCalculator calculator; return calculator; }
+
     CASE_FOR_PLAY_TYPE(Tragedy)
     CASE_FOR_PLAY_TYPE(Comedy)
+
 #undef CASE_FOR_PLAY_TYPE
-    default: throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(type))};
+
+    default:
+        throw std::runtime_error{std::format("{}: unknown Play::Type"s, static_cast<int>(type))};
     }
 }
 
