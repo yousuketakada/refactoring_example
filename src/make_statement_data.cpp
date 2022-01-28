@@ -13,7 +13,7 @@ struct PerformanceData
 class PerformanceCalculator
 {
 public:
-    int calculate_amount(const PerformanceData& data) const
+    int amount_for(const PerformanceData& data) const
     {
         int amount = 0;
         switch (data.play.type) {
@@ -38,7 +38,7 @@ public:
         return amount;
     }
 
-    int calculate_volume_credits(const PerformanceData& data) const
+    int volume_credits_for(const PerformanceData& data) const
     {
         int volume_credits = 0;
         volume_credits += std::max(data.performance.audience - 30, 0);
@@ -64,8 +64,8 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
         return EnrichedPerformance{
             .base = perf,
             .play = data.play,
-            .amount = calculator.calculate_amount(data),
-            .volume_credits = calculator.calculate_volume_credits(data)
+            .amount = calculator.amount_for(data),
+            .volume_credits = calculator.volume_credits_for(data)
         };
     };
 
