@@ -47,6 +47,12 @@ public:
     }
 };
 
+const PerformanceCalculator& get_performance_calculator()
+{
+    static const PerformanceCalculator calculator{};
+    return calculator;
+}
+
 }
 
 StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
@@ -59,7 +65,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto enrich_performance = [&](const auto& perf)
     {
         const PerformanceData data{perf, play_for(perf)};
-        const PerformanceCalculator calculator;
+        const auto& calculator = get_performance_calculator();
 
         return EnrichedPerformance{
             .base = perf,
