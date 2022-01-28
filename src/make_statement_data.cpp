@@ -45,12 +45,24 @@ public:
         if (Play::Type::Comedy == data.play.type) { volume_credits += data.performance.audience / 5; }
         return volume_credits;
     }
+
+protected:
+    ~PerformanceCalculator() = default;
 };
 
-const PerformanceCalculator& get_performance_calculator()
+class TragedyPerformanceCalculator : public PerformanceCalculator {};
+class ComedyPerformanceCalculator : public PerformanceCalculator {};
+
+const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
-    static const PerformanceCalculator calculator{};
-    return calculator;
+    switch (type) {
+#define CASE_FOR_PLAY_TYPE(X) \
+case Play::Type::X: { static const X ## PerformanceCalculator calculator; return calculator; }
+    CASE_FOR_PLAY_TYPE(Tragedy)
+    CASE_FOR_PLAY_TYPE(Comedy)
+#undef CASE_FOR_PLAY_TYPE
+    default: throw std::runtime_error{std::format("unknown type: {}"s, static_cast<int>(type))};
+    }
 }
 
 }
@@ -65,7 +77,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto enrich_performance = [&](const auto& perf)
     {
         const PerformanceData data{perf, play_for(perf)};
-        const auto& calculator = get_performance_calculator();
+        const auto& calculator = get_performance_calculator(data.play.type);
 
         return EnrichedPerformance{
             .base = perf,
