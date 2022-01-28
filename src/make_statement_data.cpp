@@ -4,41 +4,45 @@
 
 namespace {
 
-struct PerformanceCalculator
+struct PerformanceData
 {
     const Performance& performance;
     const Play& play;
+};
 
-    int calculate_amount() const
+class PerformanceCalculator
+{
+public:
+    int calculate_amount(const PerformanceData& data) const
     {
         int amount = 0;
-        switch (play.type) {
+        switch (data.play.type) {
         case Play::Type::Tragedy:
             amount = 40000;
-            if (performance.audience > 30) {
-                amount += 1000 * (performance.audience - 30);
+            if (data.performance.audience > 30) {
+                amount += 1000 * (data.performance.audience - 30);
             }
             break;
         case Play::Type::Comedy:
             amount = 30000;
-            if (performance.audience > 20) {
-                amount += 10000 + 500 * (performance.audience - 20);
+            if (data.performance.audience > 20) {
+                amount += 10000 + 500 * (data.performance.audience - 20);
             }
-            amount += 300 * performance.audience;
+            amount += 300 * data.performance.audience;
             break;
         default:
             throw std::runtime_error{std::format(
                 "unknown type: {}"s,
-                static_cast<int>(play.type))};
+                static_cast<int>(data.play.type))};
         }
         return amount;
     }
 
-    int calculate_volume_credits() const
+    int calculate_volume_credits(const PerformanceData& data) const
     {
         int volume_credits = 0;
-        volume_credits += std::max(performance.audience - 30, 0);
-        if (Play::Type::Comedy == play.type) { volume_credits += performance.audience / 5; }
+        volume_credits += std::max(data.performance.audience - 30, 0);
+        if (Play::Type::Comedy == data.play.type) { volume_credits += data.performance.audience / 5; }
         return volume_credits;
     }
 };
@@ -54,13 +58,14 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
     auto enrich_performance = [&](const auto& perf)
     {
-        const PerformanceCalculator calculator{perf, play_for(perf)};
+        const PerformanceData data{perf, play_for(perf)};
+        const PerformanceCalculator calculator;
 
         return EnrichedPerformance{
             .base = perf,
-            .play = calculator.play,
-            .amount = calculator.calculate_amount(),
-            .volume_credits = calculator.calculate_volume_credits()
+            .play = data.play,
+            .amount = calculator.calculate_amount(data),
+            .volume_credits = calculator.calculate_volume_credits(data)
         };
     };
 
