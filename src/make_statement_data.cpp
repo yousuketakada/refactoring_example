@@ -57,7 +57,9 @@ const Calculator& get_calculator(Play::Type type)
     case Play::Type::Comedy: { static const ComedyCalculator calc; return calc; }
     }
 
-    throw std::runtime_error{std::format("{}: unknown Play::Type"sv, static_cast<int>(type))};
+    throw std::runtime_error{std::format(
+        "{}: unknown Play::Type"sv,
+        static_cast<std::underlying_type_t<Play::Type>>(type))};
 }
 
 }
