@@ -7,11 +7,11 @@ namespace {
 class PerformanceCalculator
 {
 public:
-    virtual int amount_for(const Performance& performance) const = 0;
+    virtual int amount_for(const Performance& perf) const = 0;
 
-    virtual int volume_credits_for(const Performance& performance) const
+    virtual int volume_credits_for(const Performance& perf) const
     {
-        return std::max(performance.audience - 30, 0);
+        return std::max(perf.audience - 30, 0);
     }
 
 protected:
@@ -20,11 +20,11 @@ protected:
 
 class TragedyPerformanceCalculator : public PerformanceCalculator
 {
-    int amount_for(const Performance& performance) const override
+    int amount_for(const Performance& perf) const override
     {
         int amount = 40000;
-        if (performance.audience > 30) {
-            amount += 1000 * (performance.audience - 30);
+        if (perf.audience > 30) {
+            amount += 1000 * (perf.audience - 30);
         }
         return amount;
     }
@@ -32,20 +32,20 @@ class TragedyPerformanceCalculator : public PerformanceCalculator
 
 class ComedyPerformanceCalculator : public PerformanceCalculator
 {
-    int amount_for(const Performance& performance) const override
+    int amount_for(const Performance& perf) const override
     {
         int amount = 30000;
-        if (performance.audience > 20) {
-            amount += 10000 + 500 * (performance.audience - 20);
+        if (perf.audience > 20) {
+            amount += 10000 + 500 * (perf.audience - 20);
         }
-        amount += 300 * performance.audience;
+        amount += 300 * perf.audience;
         return amount;
     }
 
-    int volume_credits_for(const Performance& performance) const override
+    int volume_credits_for(const Performance& perf) const override
     {
-        int volume_credits = PerformanceCalculator::volume_credits_for(performance);
-        volume_credits += performance.audience / 5;
+        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
+        volume_credits += perf.audience / 5;
         return volume_credits;
     }
 };
