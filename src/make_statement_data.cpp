@@ -54,7 +54,7 @@ const Calculator& get_performance_calculator(Play::Type type)
 {
     switch (type) {
 #define CASE_FOR_PLAY_TYPE(X) \
-case Play::Type::X: { static const X ## Calculator calculator; return calculator; }
+case Play::Type::X: { static const X ## Calculator calc; return calc; }
 
     CASE_FOR_PLAY_TYPE(Tragedy)
     CASE_FOR_PLAY_TYPE(Comedy)
@@ -78,13 +78,13 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto enrich_performance = [&](const auto& perf)
     {
         const auto& play = play_for(perf);
-        const auto& calculator = get_performance_calculator(play.type);
+        const auto& calc = get_performance_calculator(play.type);
 
         return EnrichedPerformance{
             .base = perf,
             .play = play,
-            .amount = calculator.amount_for(perf),
-            .volume_credits = calculator.volume_credits_for(perf)
+            .amount = calc.amount_for(perf),
+            .volume_credits = calc.volume_credits_for(perf)
         };
     };
 
