@@ -19,7 +19,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     int total_amount = 0;
     int volume_credits = 0;
     std::ostringstream oss;
-    oss << std::format("Statement for {}\n"s, invoice.customer);
+    oss << std::format("Statement for {}\n"sv, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
         const auto& play = plays.at(perf.play_id);
@@ -41,7 +41,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
             break;
         default:
             throw std::runtime_error{std::format(
-                "{}: unknown Play::Type"s,
+                "{}: unknown Play::Type"sv,
                 static_cast<int>(play.type))};
         }
 
@@ -51,11 +51,11 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         if (Play::Type::Comedy == play.type) { volume_credits += perf.audience / 5; }
 
         // print line for this order
-        oss << std::format("  {}: {} ({} seats)\n"s, play.name, usd(this_amount), perf.audience);
+        oss << std::format("  {}: {} ({} seats)\n"sv, play.name, usd(this_amount), perf.audience);
         total_amount += this_amount;
     }
 
-    oss << std::format("Amount owed is {}\n"s, usd(total_amount));
-    oss << std::format("You earned {} credits\n"s, volume_credits);
+    oss << std::format("Amount owed is {}\n"sv, usd(total_amount));
+    oss << std::format("You earned {} credits\n"sv, volume_credits);
     return std::move(oss).str();
 }
