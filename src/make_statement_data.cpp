@@ -4,7 +4,7 @@
 
 namespace {
 
-class PerformanceCalculator
+class Calculator
 {
 public:
     virtual int amount_for(const Performance& perf) const = 0;
@@ -15,10 +15,10 @@ public:
     }
 
 protected:
-    ~PerformanceCalculator() = default;
+    ~Calculator() = default;
 };
 
-class TragedyPerformanceCalculator : public PerformanceCalculator
+class TragedyCalculator : public Calculator
 {
     int amount_for(const Performance& perf) const override
     {
@@ -30,7 +30,7 @@ class TragedyPerformanceCalculator : public PerformanceCalculator
     }
 };
 
-class ComedyPerformanceCalculator : public PerformanceCalculator
+class ComedyCalculator : public Calculator
 {
     int amount_for(const Performance& perf) const override
     {
@@ -44,17 +44,17 @@ class ComedyPerformanceCalculator : public PerformanceCalculator
 
     int volume_credits_for(const Performance& perf) const override
     {
-        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
+        int volume_credits = Calculator::volume_credits_for(perf);
         volume_credits += perf.audience / 5;
         return volume_credits;
     }
 };
 
-const PerformanceCalculator& get_performance_calculator(Play::Type type)
+const Calculator& get_performance_calculator(Play::Type type)
 {
     switch (type) {
 #define CASE_FOR_PLAY_TYPE(X) \
-case Play::Type::X: { static const X ## PerformanceCalculator calculator; return calculator; }
+case Play::Type::X: { static const X ## Calculator calculator; return calculator; }
 
     CASE_FOR_PLAY_TYPE(Tragedy)
     CASE_FOR_PLAY_TYPE(Comedy)
