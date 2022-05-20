@@ -17,37 +17,37 @@ auto usd(int amount)
 auto render_plain_text(const StatementData& data)
 {
     std::ostringstream oss;
-    oss << std::format("Statement for {}\n"s, data.customer);
+    oss << std::format("Statement for {}\n"sv, data.customer);
 
     for (const auto& perf : data.performances) {
         oss << std::format(
-            "  {}: {} ({} seats)\n"s,
+            "  {}: {} ({} seats)\n"sv,
             perf.play.name, usd(perf.amount), perf.base.audience);
     }
 
-    oss << std::format("Amount owed is {}\n"s, usd(data.total_amount));
-    oss << std::format("You earned {} credits\n"s, data.total_volume_credits);
+    oss << std::format("Amount owed is {}\n"sv, usd(data.total_amount));
+    oss << std::format("You earned {} credits\n"sv, data.total_volume_credits);
     return std::move(oss).str();
 }
 
 auto render_html(const StatementData& data)
 {
     std::ostringstream oss;
-    oss << std::format("<h1>Statement for {}</h1>\n"s, data.customer);
+    oss << std::format("<h1>Statement for {}</h1>\n"sv, data.customer);
 
     oss << "<table>\n"s;
     oss << "  <tr><th>play</th><th>seats</th><th>cost</th></tr>\n"s;
 
     for (const auto& perf : data.performances) {
         oss << std::format(
-            "  <tr><td>{}</td><td>{}</td><td>{}</td></tr>\n"s,
+            "  <tr><td>{}</td><td>{}</td><td>{}</td></tr>\n"sv,
             perf.play.name, perf.base.audience, usd(perf.amount));
     }
 
     oss << "</table>\n"s;
 
-    oss << std::format("<p>Amount owed is <em>{}</em></p>\n"s, usd(data.total_amount));
-    oss << std::format("<p>You earned <em>{}</em> credits</p>\n"s, data.total_volume_credits);
+    oss << std::format("<p>Amount owed is <em>{}</em></p>\n"sv, usd(data.total_amount));
+    oss << std::format("<p>You earned <em>{}</em> credits</p>\n"sv, data.total_volume_credits);
     return std::move(oss).str();
 }
 

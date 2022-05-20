@@ -62,7 +62,7 @@ case Play::Type::X: { static const X ## PerformanceCalculator calculator; return
 #undef CASE_FOR_PLAY_TYPE
 
     default:
-        throw std::runtime_error{std::format("{}: unknown Play::Type"s, static_cast<int>(type))};
+        throw std::runtime_error{std::format("{}: unknown Play::Type"sv, static_cast<int>(type))};
     }
 }
 
