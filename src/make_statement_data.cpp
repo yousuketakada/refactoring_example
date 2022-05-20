@@ -50,20 +50,14 @@ class ComedyCalculator : public Calculator
     }
 };
 
-const Calculator& get_performance_calculator(Play::Type type)
+const Calculator& get_calculator(Play::Type type)
 {
     switch (type) {
-#define CASE_FOR_PLAY_TYPE(X) \
-case Play::Type::X: { static const X ## Calculator calc; return calc; }
-
-    CASE_FOR_PLAY_TYPE(Tragedy)
-    CASE_FOR_PLAY_TYPE(Comedy)
-
-#undef CASE_FOR_PLAY_TYPE
-
-    default:
-        throw std::runtime_error{std::format("{}: unknown Play::Type"sv, static_cast<int>(type))};
+    case Play::Type::Tragedy: { static const TragedyCalculator calc; return calc; }
+    case Play::Type::Comedy: { static const ComedyCalculator calc; return calc; }
     }
+
+    throw std::runtime_error{std::format("{}: unknown Play::Type"sv, static_cast<int>(type))};
 }
 
 }
@@ -78,7 +72,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto enrich_performance = [&](const auto& perf)
     {
         const auto& play = play_for(perf);
-        const auto& calc = get_performance_calculator(play.type);
+        const auto& calc = get_calculator(play.type);
 
         return EnrichedPerformance{
             .base = perf,
