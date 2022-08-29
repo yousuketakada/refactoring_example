@@ -1,3 +1,5 @@
+# Some Refactoring Memo
+
 ## Introduction
 
 The first chapter of Fowler (2018) gives a concrete example of
@@ -23,10 +25,31 @@ and made as frequent commits as possible (without squashing).
 
 ## The starting point
 
+The source files relevant to our refactoring are:
+
+* `statement_test.cpp`:
+  The source file containing a simple test case (`BigCo`) in which
+  we input some `plays` and `invoice` to `statement()`;
+  and compare the output with `expected_text` for equality.
+* `statement.h`:
+  The header file where we define types like `Play`, `Performance`, and `Invoice`;
+  and declare `statement()`.
+* `statement.cpp`: The source file where we define `statement()`.
+
+TODO
+
 ## Extract functions
+
+TODO
 
 ## Split phase
 
+TODO
+
 ## Replace conditionals with polymorphism
 
+TODO
+
 ## Discussions
+
+TODO
