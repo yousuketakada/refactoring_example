@@ -1,3 +1,5 @@
+# Some Refactoring Memo
+
 ## Introduction
 
 The first chapter of Fowler (2018) gives a concrete example of
