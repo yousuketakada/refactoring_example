@@ -42,7 +42,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         default:
             throw std::runtime_error{std::format(
                 "{}: unknown Play::Type"sv,
-                static_cast<int>(play.type))};
+                static_cast<std::underlying_type_t<Play::Type>>(play.type))};
         }
 
         // add volume credits
