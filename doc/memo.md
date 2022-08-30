@@ -85,7 +85,8 @@ You earned 47 credits
 
 Since C++ is statically-typed,
 types like `Play` and `Invoice` must be defined and `statement()` be declared;
-one can find those definitions and declaration in `statement.h`:
+one can find those definitions and declaration in `statement.h`
+(Note also that we define the play type `Play::Type` as an enum class rather than string):
 
 ```C++
 struct Play
