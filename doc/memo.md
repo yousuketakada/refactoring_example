@@ -1,4 +1,4 @@
-# Some Refactoring Memo
+# Refactoring Memo
 
 ## Introduction
 
