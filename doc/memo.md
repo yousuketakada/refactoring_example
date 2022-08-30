@@ -27,16 +27,17 @@ and made as frequent commits as possible (without squashing).
 
 ## The starting point
 
-The source files relevant to our refactoring are the following (all under the `src` directory).
+The source files relevant to our refactoring are the following
+(all under the [`src`](/src) directory).
 
-* `statement_test.cpp`:
+* [`statement_test.cpp`](/src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
   we input some `plays` and `invoice` to a function `statement()`;
   and compare the output with `expected_text` for equality.
-* `statement.h`:
+* [`statement.h`](/src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
   and declare `statement()`.
-* `statement.cpp`:
+* [`statement.cpp`](/src/statement.cpp):
   The source file where we define `statement()`.
 
 The data stored in JSON files like `plays.json` and `invoices.json`
@@ -84,7 +85,8 @@ You earned 47 credits
 
 Since C++ is statically-typed,
 types like `Play` and `Invoice` must be defined and `statement()` be declared;
-one can find those definitions and declaration in `statement.h`:
+one can find those definitions and declaration in `statement.h`
+(Note also that we define the play type `Play::Type` as an enum class rather than string):
 
 ```C++
 struct Play
@@ -182,7 +184,8 @@ we have already extracted a free function `usd()` for formatting money like `$1,
 which is, strictly speaking, not portable but seems to work just fine.)
 
 At this moment, running tests of course gives a "green" output like the following
-(see [README](../README.md) for how to configure the project with CMake).
+(see [README](/README.md#how-to-configure-build-and-test) for
+how to configure the project with CMake).
 
 ```
 $ cmake --build build && ctest --test-dir build --output-on-failure
