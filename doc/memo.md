@@ -32,13 +32,13 @@ The source files relevant to our refactoring are the following
 
 * [`statement_test.cpp`](/src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
-  we input some `plays` and `invoice` to a function `statement()`;
+  we input some `plays` and `invoice` to a function `statement`;
   and compare the output with `expected_text` for equality.
 * [`statement.h`](/src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
-  and declare `statement()`.
+  and declare `statement`.
 * [`statement.cpp`](/src/statement.cpp):
-  The source file where we define `statement()`.
+  The source file where we define `statement`.
 
 The data stored in JSON files like `plays.json` and `invoices.json`
 for the original JavaScript example correspond to
@@ -84,7 +84,7 @@ You earned 47 credits
 ```
 
 Since C++ is statically-typed,
-types like `Play` and `Invoice` must be defined and `statement()` be declared;
+types like `Play` and `Invoice` must be defined and `statement` be declared;
 one can find those definitions and declaration in `statement.h`
 (Note also that we define the play type `Play::Type` as an enum class rather than string):
 
@@ -116,7 +116,7 @@ struct Invoice
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
 ```
 
-The function `statement()` defined in `statement.cpp` is also similar to the original JavaScript:
+The function `statement` defined in `statement.cpp` is also similar to the original JavaScript:
 
 ```C++
 namespace {
@@ -179,8 +179,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 Note however that, unlike the original JavaScript,
-we have already extracted a free function `usd()` for formatting money like `$1,730.00`.
-(The function `usd()` makes use of a locale for formatting money,
+we have already extracted a free function `usd` for formatting money like `$1,730.00`.
+(The function `usd` makes use of a locale for formatting money,
 which is, strictly speaking, not portable but seems to work just fine.)
 
 At this moment, running tests of course gives a "green" output like the following
@@ -204,7 +204,7 @@ Test project C:/Users/yousuke/work/refactoring_example/build
 Total Test time (real) =   0.06 sec
 ```
 
-If we introduce a bug, say, we forget to set the locale correctly in `usd()`,
+If we introduce a bug, say, we forget to set the locale correctly in `usd`,
 we indeed get an error or "red" output like the following:
 
 ```
@@ -267,6 +267,67 @@ As Fowler (2018) points out,
 it is important to run tests often while we refactor.
 
 ## Extract functions
+
+The first refactoring we apply to `statement` is _Extract Function_.
+Specifically, we extract the switch statement in the middle
+that calculates the charge for a performance
+to some new function, namely, `amount_for`.
+Although the JavaScript example uses a nested function,
+we have no such a thing in C++;
+let us use a lambda here as the closest alternative:
+
+```C++
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto amount_for = [](const auto& perf, const auto& play)
+    {
+        int amount = 0;
+        switch (play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.audience > 30) {
+                amount += 1000 * (perf.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.audience > 20) {
+                amount += 10000 + 500 * (perf.audience - 20);
+            }
+            amount += 300 * perf.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(play.type))};
+        }
+        return amount;
+    };
+
+    int total_amount = 0;
+    int volume_credits = 0;
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"sv, invoice.customer);
+
+    for (const auto& perf : invoice.performances) {
+        const auto& play = plays.at(perf.play_id);
+        int this_amount = amount_for(perf, play);
+
+        // add volume credits
+        volume_credits += std::max(perf.audience - 30, 0);
+        // add extra credit for every ten comedy attendees
+        if (Play::Type::Comedy == play.type) { volume_credits += perf.audience / 5; }
+
+        // print line for this order
+        oss << std::format("  {}: {} ({} seats)\n"sv, play.name, usd(this_amount), perf.audience);
+        total_amount += this_amount;
+    }
+
+    oss << std::format("Amount owed is {}\n"sv, usd(total_amount));
+    oss << std::format("You earned {} credits\n"sv, volume_credits);
+    return std::move(oss).str();
+}
+```
 
 TODO
 
