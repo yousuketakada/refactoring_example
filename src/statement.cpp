@@ -18,27 +18,27 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 {
     auto amount_for = [](const auto& perf, const auto& play)
     {
-        int this_amount = 0;
+        int amount = 0;
         switch (play.type) {
         case Play::Type::Tragedy:
-            this_amount = 40000;
+            amount = 40000;
             if (perf.audience > 30) {
-                this_amount += 1000 * (perf.audience - 30);
+                amount += 1000 * (perf.audience - 30);
             }
             break;
         case Play::Type::Comedy:
-            this_amount = 30000;
+            amount = 30000;
             if (perf.audience > 20) {
-                this_amount += 10000 + 500 * (perf.audience - 20);
+                amount += 10000 + 500 * (perf.audience - 20);
             }
-            this_amount += 300 * perf.audience;
+            amount += 300 * perf.audience;
             break;
         default:
             throw std::runtime_error{std::format(
                 "{}: unknown Play::Type"sv,
                 static_cast<std::underlying_type_t<Play::Type>>(play.type))};
         }
-        return this_amount;
+        return amount;
     };
 
     int total_amount = 0;
