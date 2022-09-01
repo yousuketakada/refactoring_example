@@ -56,20 +56,20 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
     auto total_volume_credits = [&]()
     {
-        int volume_credits = 0;
+        int total = 0;
         for (const auto& perf : invoice.performances) {
-            volume_credits += volume_credits_for(perf);
+            total += volume_credits_for(perf);
         }
-        return volume_credits;
+        return total;
     };
 
     auto total_amount = [&]()
     {
-        int amount = 0;
+        int total = 0;
         for (const auto& perf : invoice.performances) {
-            amount += amount_for(perf);
+            total += amount_for(perf);
         }
-        return amount;
+        return total;
     };
 
     std::ostringstream oss;
