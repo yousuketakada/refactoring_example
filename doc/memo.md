@@ -332,15 +332,15 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 When we did the extraction to the function `amount_for`
 (which is to be precise a lambda but we no longer distinguish between lambda and function),
 we had to deal with three variables
-`perf`, `play`, and `this_amount` that would go out of the scope.
+`perf`, `play`, and `this_amount` that would go out of scope.
 The first two variables `perf` and `play` are not modified so that we pass them as the parameters;
 the last one `this_amount` is the only modified variable so that we return it from the function.
 
 Let us now consider where the variable `play` has come from:
 `play` is computed from `perf` so that there was actually no need to pass it
 as a parameter at all.
-_Extract Function_ could be less complicated
-if we had removed such a temporary variable in advance,
+_Extract Function_ can be less complicated (because less variables will go out of scope)
+if we have removed such temporary variables in advance,
 which is another useful refactoring called _Replace Temp with Query_.
 
 We can apply _Replace Temp with Query_ to the variable `play`
