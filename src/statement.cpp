@@ -16,10 +16,15 @@ auto usd(int amount)
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    auto amount_for = [](const auto& perf, const auto& play)
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto amount_for = [&](const auto& perf)
     {
         int amount = 0;
-        switch (play.type) {
+        switch (play_for(perf).type) {
         case Play::Type::Tragedy:
             amount = 40000;
             if (perf.audience > 30) {
@@ -36,7 +41,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         default:
             throw std::runtime_error{std::format(
                 "{}: unknown Play::Type"sv,
-                static_cast<std::underlying_type_t<Play::Type>>(play.type))};
+                static_cast<std::underlying_type_t<Play::Type>>(play_for(perf).type))};
         }
         return amount;
     };
@@ -47,16 +52,15 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"sv, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        const auto& play = plays.at(perf.play_id);
-        int this_amount = amount_for(perf, play);
+        int this_amount = amount_for(perf);
 
         // add volume credits
         volume_credits += std::max(perf.audience - 30, 0);
         // add extra credit for every ten comedy attendees
-        if (Play::Type::Comedy == play.type) { volume_credits += perf.audience / 5; }
+        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
 
         // print line for this order
-        oss << std::format("  {}: {} ({} seats)\n"sv, play.name, usd(this_amount), perf.audience);
+        oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(this_amount), perf.audience);
         total_amount += this_amount;
     }
 
