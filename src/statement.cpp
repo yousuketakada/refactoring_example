@@ -76,7 +76,6 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"sv, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        // print line for this order
         oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(amount_for(perf)), perf.audience);
     }
 
