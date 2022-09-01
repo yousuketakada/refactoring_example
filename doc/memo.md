@@ -329,6 +329,84 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
+When we did the extraction to the function `amount_for`
+(which is to be precise a lambda but we no longer distinguish between lambda and function),
+we had to deal with three variables
+`perf`, `play`, and `this_amount` that would go out of scope.
+The first two variables `perf` and `play` are not modified so that we pass them as the parameters;
+the last one `this_amount` is the only modified variable so that we return it from the function.
+
+Let us now consider where the variable `play` has come from:
+`play` is computed from `perf` so that there was actually no need to pass it
+as a parameter at all.
+_Extract Function_ can be less complicated (because less variables will go out of scope)
+if we have removed such temporary variables in advance,
+which is another useful refactoring called _Replace Temp with Query_.
+
+We can apply _Replace Temp with Query_ to the variable `play`
+in a series of refactoring moves.
+We first extract the right hand side of the statement declaring `play` to a function,
+say, `play_for`, after which we apply _Inline Variable_ to `play` to remove it.
+Finally, we apply _Change Function Declaration_ to `amount_for` to remove the `play` parameter.
+All of these yields:
+
+```C++
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto amount_for = [&](const auto& perf)
+    {
+        int amount = 0;
+        switch (play_for(perf).type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.audience > 30) {
+                amount += 1000 * (perf.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.audience > 20) {
+                amount += 10000 + 500 * (perf.audience - 20);
+            }
+            amount += 300 * perf.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(play_for(perf).type))};
+        }
+        return amount;
+    };
+
+    int total_amount = 0;
+    int volume_credits = 0;
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"sv, invoice.customer);
+
+    for (const auto& perf : invoice.performances) {
+        int this_amount = amount_for(perf);
+
+        // add volume credits
+        volume_credits += std::max(perf.audience - 30, 0);
+        // add extra credit for every ten comedy attendees
+        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
+
+        // print line for this order
+        oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(this_amount), perf.audience);
+        total_amount += this_amount;
+    }
+
+    oss << std::format("Amount owed is {}\n"sv, usd(total_amount));
+    oss << std::format("You earned {} credits\n"sv, volume_credits);
+    return std::move(oss).str();
+}
+```
+
 TODO
 
 ## Split phase
