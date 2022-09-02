@@ -492,6 +492,33 @@ whereas the calculation logic has decomposed into nested functions (lambdas).
 
 ## Splitting phases of calculation and formatting
 
+Next, we apply _Split Phase_ to divide `statement` into two phases:
+the first phase that calculates data required for the statement; and
+the second phase that renders it into some particular format
+(i.e., text for now but it is easy to support more formats
+if the two phases are clearly separated).
+To this end, we extract the text rendering function `render_plain_text` from `statement`:
+
+```C++
+struct StatementData {};
+
+std::string render_plain_text([[maybe_unused]] const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    ...
+}
+```
+
+where the omitted function body is actually the same as that of the previous `statement` function
+and let the new `statement` function call into `render_plain_text`:
+
+```C++
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    const StatementData statement_data;
+    return render_plain_text(statement_data, invoice, plays);
+}
+```
+
 TODO
 
 ## Reorganizing conditional logic with polymorphism (strategy pattern)
