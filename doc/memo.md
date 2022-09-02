@@ -266,7 +266,7 @@ Errors while running CTest
 As Fowler (2018) points out,
 it is important to run tests often while we refactor.
 
-## Extract functions
+## Decomposing the `statement` function
 
 The first refactoring we apply to `statement` is _Extract Function_.
 Specifically, we extract the switch statement in the middle
@@ -490,10 +490,10 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 The top-level function `statement` now performs only printing the statement
 whereas the calculation logic has decomposed into nested functions (lambdas).
 
-## Split phase
+## Splitting phases of calculation and formatting
 
 TODO
 
-## Replace conditionals with polymorphism
+## Reorganizing conditional logic with polymorphism (strategy pattern)
 
 TODO
