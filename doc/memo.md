@@ -1,7 +1,5 @@
 # Refactoring Memo
 
-## Introduction
-
 The first chapter of Fowler (2018) gives a concrete example of
 how we refactor code with some common anti-patterns or "bad smells."
 Although the example is in JavaScript,
@@ -24,6 +22,8 @@ in order to minimize the risks of refactoring
 (introducing subtle bugs, breaking the code for a long time, etc.),
 I have tried to refactor with the "one small step at a time" principle in mind
 and made as frequent commits as possible (without squashing).
+In what follows, I shall relate a few significant steps of refactoring,
+mainly focusing on the difference between JavaScript and C++.
 
 ## The starting point
 
@@ -494,9 +494,5 @@ TODO
 TODO
 
 ## Replace conditionals with polymorphism
-
-TODO
-
-## Discussions
 
 TODO
