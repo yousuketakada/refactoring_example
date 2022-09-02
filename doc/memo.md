@@ -487,7 +487,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
-TODO
+The top-level function `statement` now performs only printing the statement
+whereas the calculation logic has decomposed into nested functions (lambdas).
 
 ## Split phase
 
