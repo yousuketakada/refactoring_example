@@ -15,6 +15,7 @@ auto usd(int amount)
 struct EnrichedPerformance
 {
     const Performance& base;
+    const Play& play;
 };
 
 struct StatementData
@@ -23,17 +24,12 @@ struct StatementData
     std::vector<EnrichedPerformance> performances;
 };
 
-std::string render_plain_text(const StatementData& data, const std::map<std::string, Play>& plays)
+std::string render_plain_text(const StatementData& data)
 {
-    auto play_for = [&](const auto& perf) -> decltype(auto)
-    {
-        return plays.at(perf.base.play_id);
-    };
-
     auto amount_for = [&](const auto& perf)
     {
         int amount = 0;
-        switch (play_for(perf).type) {
+        switch (perf.play.type) {
         case Play::Type::Tragedy:
             amount = 40000;
             if (perf.base.audience > 30) {
@@ -50,7 +46,7 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
         default:
             throw std::runtime_error{std::format(
                 "{}: unknown Play::Type"sv,
-                static_cast<std::underlying_type_t<Play::Type>>(play_for(perf).type))};
+                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
         }
         return amount;
     };
@@ -59,7 +55,7 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
     {
         int volume_credits = 0;
         volume_credits += std::max(perf.base.audience - 30, 0);
-        if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.base.audience / 5; }
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
         return volume_credits;
     };
 
@@ -85,7 +81,7 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
     oss << std::format("Statement for {}\n"sv, data.customer);
 
     for (const auto& perf : data.performances) {
-        oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(amount_for(perf)), perf.base.audience);
+        oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(amount_for(perf)), perf.base.audience);
     }
 
     oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
@@ -97,9 +93,17 @@ std::string render_plain_text(const StatementData& data, const std::map<std::str
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    auto enrich_performance = [](const auto& perf)
+    auto play_for = [&](const auto& perf) -> decltype(auto)
     {
-        return EnrichedPerformance{.base = perf};
+        return plays.at(perf.play_id);
+    };
+
+    auto enrich_performance = [&](const auto& base)
+    {
+        return EnrichedPerformance{
+            .base = base,
+            .play = play_for(base)
+        };
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
@@ -110,5 +114,5 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         .performances = std::move(enriched_performances)
     };
 
-    return render_plain_text(statement_data, plays);
+    return render_plain_text(statement_data);
 }
