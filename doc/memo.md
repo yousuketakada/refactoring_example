@@ -521,8 +521,138 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
 Note that the extracted function `render_plain_text` takes
 an empty parameter `data` of type `StatementData`,
-to which we are going to put intermediate data necessary for rendering the statement
+to which we are going to put the intermediate data (the results of the first phase)
+required to render the statement (the second phase)
 so that `render_plain_text` depends only on `StatementData`.
+
+It would be straightforward to simply put `customer` and `performances` of `Invoice`
+to `StatementData` so as to remove the `invoice` parameter of `render_plain_text`.
+In order to remove the `plays` parameter, however,
+we need to somehow "enrich" each element of `performances`
+so that, from the "enriched" performance, one can get the corresponding `play`
+(this refactoring is unfortunately not given its name in the first chapter of Fowler (2018)
+but is one the most useful refactorings named _Combine Functions into Transform_
+listed in Chapter 6: A First Set of Refactorings).
+The function `render_plain_text` now takes only one parameter of type `StatementData`
+that has been modified so as to contain "enriched" performances of type `EnrichedPerformance`:
+
+```C++
+struct EnrichedPerformance
+{
+    const Performance& base;
+    const Play& play;
+};
+
+struct StatementData
+{
+    const std::string& customer;
+    std::vector<EnrichedPerformance> performances;
+};
+
+std::string render_plain_text(const StatementData& data)
+{
+    auto amount_for = [&](const auto& perf)
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
+        }
+        return amount;
+    };
+
+    auto volume_credits_for = [&](const auto& perf)
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    };
+
+    auto total_amount = [&]()
+    {
+        int total = 0;
+        for (const auto& perf : data.performances) {
+            total += amount_for(perf);
+        }
+        return total;
+    };
+
+    auto total_volume_credits = [&]()
+    {
+        int total = 0;
+        for (const auto& perf : data.performances) {
+            total += volume_credits_for(perf);
+        }
+        return total;
+    };
+
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"sv, data.customer);
+
+    for (const auto& perf : data.performances) {
+        oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(amount_for(perf)), perf.base.audience);
+    }
+
+    oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
+    oss << std::format("You earned {} credits\n"sv, total_volume_credits());
+    return std::move(oss).str();
+}
+```
+
+The `statement` function populates `StatementData` and passes it to `render_plain_text`:
+
+```C++
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto enrich_performance = [&](const auto& base)
+    {
+        return EnrichedPerformance{
+            .base = base,
+            .play = play_for(base)
+        };
+    };
+
+    std::vector<EnrichedPerformance> enriched_performances;
+    std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
+
+    const StatementData statement_data{
+        .customer = invoice.customer,
+        .performances = std::move(enriched_performances)
+    };
+
+    return render_plain_text(statement_data);
+}
+```
+
+where we have moved the function `play_for` back to `statement`
+in order for `enrich_performance` to "enrich" a performance with the corresponding `play`.
+
+The "enrichment" could be done differently, e.g., by inheritance,
+but here I have made `EnrichedPerformance` simply have a member named `base` that is
+a reference to the original `Performance`.
+This way, we can avoid a deep copy at the cost that we have to say `perf.base.XYZ`
+to access the original member `XYZ` (as we have done so in `render_plain_text`).
 
 TODO
 
