@@ -519,6 +519,11 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
+Note that the extracted function `render_plain_text` takes
+an empty parameter `data` of type `StatementData`,
+to which we are going to put intermediate data necessary for rendering the statement
+so that `render_plain_text` depends only on `StatementData`.
+
 TODO
 
 ## Reorganizing conditional logic with polymorphism (strategy pattern)
