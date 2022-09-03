@@ -645,7 +645,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
-where we have moved the function `play_for` back to `statement`
+where we have moved the function `play_for` back to `statement` (_Move Function_)
 in order for `enrich_performance` to "enrich" a performance with the corresponding `play`.
 
 The "enrichment" could be done differently, e.g., by inheritance,
