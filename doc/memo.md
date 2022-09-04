@@ -791,6 +791,118 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
+To move the remaining functions implementing the calculation logic,
+i.e., `total_amount` and `total_volume_credits`, back to `statement`,
+we add the corresponding new fields to `StatementData`:
+
+```C++
+struct StatementData
+{
+    const std::string& customer;
+    std::vector<EnrichedPerformance> performances;
+    int total_amount;
+    int total_volume_credits;
+};
+
+std::string render_plain_text(const StatementData& data)
+{
+    std::ostringstream oss;
+    oss << std::format("Statement for {}\n"sv, data.customer);
+
+    for (const auto& perf : data.performances) {
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            perf.play.name, usd(perf.amount), perf.base.audience);
+    }
+
+    oss << std::format("Amount owed is {}\n"sv, usd(data.total_amount));
+    oss << std::format("You earned {} credits\n"sv, data.total_volume_credits);
+    return std::move(oss).str();
+}
+```
+
+In `statement`, let us take this opportunity to remove raw accumulation loops
+using an appropriate algorithm
+(we wish we could use range-based reduction, which is yet to be standardized,
+but we consider this refactoring a form of _Replace Loop with Pipeline_):
+
+```C++
+std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto amount_for = [&](const auto& perf)
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
+        }
+        return amount;
+    };
+
+    auto volume_credits_for = [&](const auto& perf)
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    };
+
+    auto enrich_performance = [&](const auto& base)
+    {
+        EnrichedPerformance enriched{
+            .base = base,
+            .play = play_for(base)
+        };
+
+        enriched.amount = amount_for(enriched);
+        enriched.volume_credits = volume_credits_for(enriched);
+
+        return enriched;
+    };
+
+    std::vector<EnrichedPerformance> enriched_performances;
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
+
+    auto total_amount = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.amount; });
+    auto total_volume_credits = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
+
+    const StatementData statement_data{
+        .customer = invoice.customer,
+        .performances = std::move(enriched_performances),
+        .total_amount = total_amount,
+        .total_volume_credits = total_volume_credits
+    };
+
+    return render_plain_text(statement_data);
+}
+```
+
 TODO
 
 ## Reorganizing conditional logic with polymorphism (strategy pattern)
