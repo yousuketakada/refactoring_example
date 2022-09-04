@@ -677,7 +677,7 @@ but, in C++20, the most universal way to convert a range to an
 [std::vector](https://en.cppreference.com/w/cpp/container/vector) would be to use
 [std::back_insert_iterator](https://en.cppreference.com/w/cpp/iterator/back_insert_iterator)
 as shown above
-(see also [here](https://timur.audio/how-to-make-a-container-from-a-c20-range)
+(see [here](https://timur.audio/how-to-make-a-container-from-a-c20-range)
 for more discussions).
 
 Similarly, let us further "enrich" `EnrichedPerformance`
@@ -1007,17 +1007,21 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 Since the first phase has been clearly separated from the second,
-it is a good idea to also separate the source file to reflect the logical structure.
+let us also separate the source file to reflect the logical structure.
 Specifically, we add new header and source files for `make_statement_data`
 (and make `statement.cpp` where we define `statement` include that header):
 
 * [`make_statement_data.h`](/src/make_statement_data.h):
-  The header where we define types `EnrichedPerformance` and `StatementData`; and
+  The header file where we define types `EnrichedPerformance` and `StatementData`; and
   declare `make_statement_data`.
 * [`make_statement_data.cpp`](/src/make_statement_data.cpp):
-  The source where we define `make_statement_data`.
+  The source file where we define `make_statement_data`.
 
-TODO: HTML
+Now that the `statement` function is implemented simply by composing the two phases,
+i.e., calculation and formatting,
+one can easily implement an HTML version of `statement` by
+composing the existing calculation phase and a new HTML formatting phase;
+its implementation and test are omitted from this memo for brevity.
 
 ## Reorganizing conditional logic with polymorphism (strategy pattern)
 
