@@ -397,7 +397,10 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         if (Play::Type::Comedy == play_for(perf).type) { volume_credits += perf.audience / 5; }
 
         // print line for this order
-        oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(this_amount), perf.audience);
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            play_for(perf).name, usd(this_amount), perf.audience);
+
         total_amount += this_amount;
     }
 
@@ -478,7 +481,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     oss << std::format("Statement for {}\n"sv, invoice.customer);
 
     for (const auto& perf : invoice.performances) {
-        oss << std::format("  {}: {} ({} seats)\n"sv, play_for(perf).name, usd(amount_for(perf)), perf.audience);
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            play_for(perf).name, usd(amount_for(perf)), perf.audience);
     }
 
     oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
@@ -502,7 +507,9 @@ To this end, we first extract the text rendering function `render_plain_text` fr
 ```C++
 struct StatementData {};
 
-std::string render_plain_text([[maybe_unused]] const StatementData& data, const Invoice& invoice, const std::map<std::string, Play>& plays)
+std::string render_plain_text(
+    [[maybe_unused]] const StatementData& data,
+    const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     ...
 }
@@ -607,7 +614,9 @@ std::string render_plain_text(const StatementData& data)
     oss << std::format("Statement for {}\n"sv, data.customer);
 
     for (const auto& perf : data.performances) {
-        oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(amount_for(perf)), perf.base.audience);
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            perf.play.name, usd(amount_for(perf)), perf.base.audience);
     }
 
     oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
@@ -635,7 +644,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
-    std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
 
     const StatementData statement_data{
         .customer = invoice.customer,
@@ -664,8 +675,8 @@ struct EnrichedPerformance
 {
     const Performance& base;
     const Play& play;
-    int amount{};
-    int volume_credits{};
+    int amount;
+    int volume_credits;
 };
 
 struct StatementData
@@ -698,7 +709,9 @@ std::string render_plain_text(const StatementData& data)
     oss << std::format("Statement for {}\n"sv, data.customer);
 
     for (const auto& perf : data.performances) {
-        oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(perf.amount), perf.base.audience);
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            perf.play.name, usd(perf.amount), perf.base.audience);
     }
 
     oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
@@ -765,7 +778,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
-    std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
 
     const StatementData statement_data{
         .customer = invoice.customer,
