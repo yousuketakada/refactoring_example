@@ -487,17 +487,17 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
-The top-level function `statement` now performs only printing the statement
+The top-level function `statement` now performs only formatting the statement
 whereas the calculation logic has decomposed into nested functions (lambdas).
 
 ## Splitting phases of calculation and formatting
 
-Next, we apply _Split Phase_ to divide `statement` into two phases:
+Next, we apply _Split Phase_ to divide the `statement` function into two phases:
 the first phase that calculates data required for the statement; and
-the second phase that renders it into some particular format
-(i.e., text for now but it is easy to support more formats
-if the two phases are clearly separated).
-To this end, we extract the text rendering function `render_plain_text` from `statement`:
+the second phase that renders those calculated data into some particular format
+(i.e., text for now but it is easy to support more formats such as HTML
+if the two phases have been clearly separated).
+To this end, we first extract the text rendering function `render_plain_text` from `statement`:
 
 ```C++
 struct StatementData {};
@@ -509,7 +509,7 @@ std::string render_plain_text([[maybe_unused]] const StatementData& data, const 
 ```
 
 where the omitted function body is actually the same as that of the previous `statement` function
-and let the new `statement` function call into `render_plain_text`:
+and let the new `statement` function simply call into `render_plain_text`:
 
 ```C++
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
@@ -534,7 +534,8 @@ so that, from the "enriched" performance, one can get the corresponding `play`
 but is one the most useful refactorings named _Combine Functions into Transform_
 listed in Chapter 6: A First Set of Refactorings).
 The function `render_plain_text` now takes only one parameter of type `StatementData`
-that has been modified so as to contain "enriched" performances of type `EnrichedPerformance`:
+that has been modified so as to contain "enriched" performances
+each of which is of type `EnrichedPerformance`:
 
 ```C++
 struct EnrichedPerformance
@@ -651,8 +652,9 @@ in order for `enrich_performance` to "enrich" a performance with the correspondi
 The "enrichment" could be done differently, e.g., by inheritance,
 but here I have made `EnrichedPerformance` simply have a member named `base` that is
 a reference to the original `Performance`.
-This way, we can avoid a deep copy at the cost that we have to say `perf.base.XYZ`
-to access the original member `XYZ` (as we have done so in `render_plain_text`).
+This way, we can avoid a deep copy at the cost that, for an "enriched" performance `perf`,
+we have to say `perf.base.XYZ` to access the original member `XYZ`
+(as we have done in `render_plain_text`).
 
 TODO
 
