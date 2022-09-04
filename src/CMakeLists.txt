@@ -30,6 +30,8 @@ target_sources(
         statement.h
     PRIVATE
         statement.cpp
+        make_statement_data.h
+        make_statement_data.cpp
 )
 
 target_sources(
