@@ -823,8 +823,8 @@ std::string render_plain_text(const StatementData& data)
 
 In `statement`, let us take this opportunity to remove raw accumulation loops
 using an appropriate algorithm
-(we wish we could use range-based reduction, which is yet to be standardized,
-but we consider this refactoring a form of _Replace Loop with Pipeline_):
+(I wish we could use `std::ranges`-based reduction, which is yet to be standardized,
+but I consider this refactoring a form of _Replace Loop with Pipeline_):
 
 ```C++
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
