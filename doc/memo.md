@@ -667,6 +667,18 @@ This way, we can avoid a deep copy at the cost that, for an "enriched" performan
 we have to say `perf.base.XYZ` to access the original member `XYZ`
 (as we have done in `render_plain_text`).
 
+Note also that, in C++23, one can use
+[`std::ranges::to`](https://en.cppreference.com/w/cpp/ranges/to)
+to convert a range to a container
+(in this case, `invoice.performances | std::views::transform(enrich_performance)` to
+`std::vector<EnrichedPerformance>`),
+but, in C++20, the most universal way to convert a range to an
+[std::vector](https://en.cppreference.com/w/cpp/container/vector) would be to use
+[std::back_insert_iterator](https://en.cppreference.com/w/cpp/iterator/back_insert_iterator)
+as shown above
+(see also [here](https://timur.audio/how-to-make-a-container-from-a-c20-range)
+for more discussions).
+
 Similarly, let us further "enrich" `EnrichedPerformance`
 with new fields `amount` and `volume_credits`:
 
