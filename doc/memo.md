@@ -507,7 +507,7 @@ To this end, we first extract the text rendering function `render_plain_text` fr
 ```C++
 struct StatementData {};
 
-std::string render_plain_text(
+auto render_plain_text(
     [[maybe_unused]] const StatementData& data,
     const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
@@ -557,7 +557,7 @@ struct StatementData
     std::vector<EnrichedPerformance> performances;
 };
 
-std::string render_plain_text(const StatementData& data)
+auto render_plain_text(const StatementData& data)
 {
     auto amount_for = [&](const auto& perf)
     {
@@ -647,6 +647,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     std::ranges::copy(
         invoice.performances | std::views::transform(enrich_performance),
         std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
 
     const StatementData statement_data{
         .customer = invoice.customer,
@@ -697,7 +698,7 @@ struct StatementData
     std::vector<EnrichedPerformance> performances;
 };
 
-std::string render_plain_text(const StatementData& data)
+auto render_plain_text(const StatementData& data)
 {
     auto total_amount = [&]()
     {
@@ -793,6 +794,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     std::ranges::copy(
         invoice.performances | std::views::transform(enrich_performance),
         std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
 
     const StatementData statement_data{
         .customer = invoice.customer,
@@ -816,7 +818,7 @@ struct StatementData
     int total_volume_credits;
 };
 
-std::string render_plain_text(const StatementData& data)
+auto render_plain_text(const StatementData& data)
 {
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"sv, data.customer);
@@ -896,6 +898,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     std::ranges::copy(
         invoice.performances | std::views::transform(enrich_performance),
         std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
 
     auto total_amount = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
@@ -976,6 +979,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     std::ranges::copy(
         invoice.performances | std::views::transform(enrich_performance),
         std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
 
     auto total_amount = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
