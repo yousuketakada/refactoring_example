@@ -14,7 +14,7 @@ auto usd(int amount)
     return std::move(oss).str();
 }
 
-std::string render_plain_text(const StatementData& data)
+auto render_plain_text(const StatementData& data)
 {
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"sv, data.customer);
@@ -30,6 +30,27 @@ std::string render_plain_text(const StatementData& data)
     return std::move(oss).str();
 }
 
+auto render_html(const StatementData& data)
+{
+    std::ostringstream oss;
+    oss << std::format("<h1>Statement for {}</h1>\n"s, data.customer);
+
+    oss << "<table>\n"s;
+    oss << "  <tr><th>play</th><th>seats</th><th>cost</th></tr>\n"s;
+
+    for (const auto& perf : data.performances) {
+        oss << std::format(
+            "  <tr><td>{}</td><td>{}</td><td>{}</td></tr>\n"s,
+            perf.play.name, perf.base.audience, usd(perf.amount));
+    }
+
+    oss << "</table>\n"s;
+
+    oss << std::format("<p>Amount owed is <em>{}</em></p>\n"s, usd(data.total_amount));
+    oss << std::format("<p>You earned <em>{}</em> credits</p>\n"s, data.total_volume_credits);
+    return std::move(oss).str();
+}
+
 }
 
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
@@ -39,6 +60,5 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
 std::string html_statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
-    // TODO
-    return {};
+    return render_html(make_statement_data(invoice, plays));
 }
