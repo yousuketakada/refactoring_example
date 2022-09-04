@@ -16,16 +16,16 @@ struct EnrichedPerformance
 {
     const Performance& base;
     const Play& play;
-    int amount{};
-    int volume_credits{};
+    int amount;
+    int volume_credits;
 };
 
 struct StatementData
 {
     const std::string& customer;
     std::vector<EnrichedPerformance> performances;
-    int total_amount{};
-    int total_volume_credits{};
+    int total_amount;
+    int total_volume_credits;
 };
 
 std::string render_plain_text(const StatementData& data)
@@ -34,7 +34,9 @@ std::string render_plain_text(const StatementData& data)
     oss << std::format("Statement for {}\n"sv, data.customer);
 
     for (const auto& perf : data.performances) {
-        oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(perf.amount), perf.base.audience);
+        oss << std::format(
+            "  {}: {} ({} seats)\n"sv,
+            perf.play.name, usd(perf.amount), perf.base.audience);
     }
 
     oss << std::format("Amount owed is {}\n"sv, usd(data.total_amount));
@@ -98,10 +100,16 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
-    std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
 
-    auto total_amount = std::accumulate(std::cbegin(enriched_performances), std::cend(enriched_performances), 0, [](int sum, const auto& perf) { return sum + perf.amount; });
-    auto total_volume_credits = std::accumulate(std::cbegin(enriched_performances), std::cend(enriched_performances), 0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
+    auto total_amount = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.amount; });
+    auto total_volume_credits = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
 
     const StatementData statement_data{
         .customer = invoice.customer,
@@ -109,7 +117,6 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         .total_amount = total_amount,
         .total_volume_credits = total_volume_credits
     };
-
 
     return render_plain_text(statement_data);
 }
