@@ -24,28 +24,12 @@ struct StatementData
 {
     const std::string& customer;
     std::vector<EnrichedPerformance> performances;
+    int total_amount{};
+    int total_volume_credits{};
 };
 
 std::string render_plain_text(const StatementData& data)
 {
-    auto total_amount = [&]()
-    {
-        int total = 0;
-        for (const auto& perf : data.performances) {
-            total += perf.amount;
-        }
-        return total;
-    };
-
-    auto total_volume_credits = [&]()
-    {
-        int total = 0;
-        for (const auto& perf : data.performances) {
-            total += perf.volume_credits;
-        }
-        return total;
-    };
-
     std::ostringstream oss;
     oss << std::format("Statement for {}\n"sv, data.customer);
 
@@ -53,8 +37,8 @@ std::string render_plain_text(const StatementData& data)
         oss << std::format("  {}: {} ({} seats)\n"sv, perf.play.name, usd(perf.amount), perf.base.audience);
     }
 
-    oss << std::format("Amount owed is {}\n"sv, usd(total_amount()));
-    oss << std::format("You earned {} credits\n"sv, total_volume_credits());
+    oss << std::format("Amount owed is {}\n"sv, usd(data.total_amount));
+    oss << std::format("You earned {} credits\n"sv, data.total_volume_credits);
     return std::move(oss).str();
 }
 
@@ -116,10 +100,31 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
     std::vector<EnrichedPerformance> enriched_performances;
     std::ranges::copy(invoice.performances | std::views::transform(enrich_performance), std::back_inserter(enriched_performances));
 
+    auto total_amount = [&]()
+    {
+        int total = 0;
+        for (const auto& perf : enriched_performances) {
+            total += perf.amount;
+        }
+        return total;
+    } ();
+
+    auto total_volume_credits = [&]()
+    {
+        int total = 0;
+        for (const auto& perf : enriched_performances) {
+            total += perf.volume_credits;
+        }
+        return total;
+    } ();
+
     const StatementData statement_data{
         .customer = invoice.customer,
-        .performances = std::move(enriched_performances)
+        .performances = std::move(enriched_performances),
+        .total_amount = total_amount,
+        .total_volume_credits = total_volume_credits
     };
+
 
     return render_plain_text(statement_data);
 }
