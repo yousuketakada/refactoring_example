@@ -339,9 +339,9 @@ the last one `this_amount` is the only modified variable so that we return it fr
 Let us now consider where the variable `play` has come from:
 `play` is computed from `perf` so that there was actually no need to pass it
 as a parameter at all.
-_Extract Function_ can be less complicated (because less variables will go out of scope)
-if we have removed such temporary variables in advance,
-which is another useful refactoring called _Replace Temp with Query_.
+_Extract Function_ can be less complicated (because less variables will go out of scope),
+if we have removed such temporary variables in advance;
+this is another useful refactoring called _Replace Temp with Query_.
 
 We can apply _Replace Temp with Query_ to the variable `play`
 in a series of refactoring moves.
