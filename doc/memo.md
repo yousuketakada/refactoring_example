@@ -497,7 +497,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 The top-level function `statement` now performs only formatting the statement
 whereas the calculation logic has decomposed into nested functions (lambdas).
 
-## Splitting phases of calculation and formatting
+## Splitting the phases of calculation and formatting
 
 Next, we apply _Split Phase_ to divide the `statement` function into two phases:
 the first phase that calculates data required for the statement; and
@@ -914,6 +914,14 @@ one can easily implement an HTML version of `statement` by
 composing the existing calculation phase and a new HTML formatting phase;
 its implementation and test are omitted from this memo for brevity.
 
-## Reorganizing conditional logic with polymorphism (strategy pattern)
+## Reorganizing the conditional logic by `Play::Type`
+
+Lastly, let us consider refactorings required
+when we add more `Play::Type`s and their calculation logic.
+The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
+contain some already complex conditional logic (`switch` and `if`) by `Play::Type`;
+such a conditional logic can be represented naturally by using polymorphism
+(_Replace Conditional with Polymorphism_; this refactoring can be considered a form of the
+[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)).
 
 TODO
