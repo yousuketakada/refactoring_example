@@ -4,7 +4,7 @@
 
 namespace {
 
-class Calculator
+class PerformanceCalculator
 {
 public:
     virtual int amount_for(const Performance& perf) const = 0;
@@ -15,10 +15,10 @@ public:
     }
 
 protected:
-    ~Calculator() = default;
+    ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public Calculator
+class TragedyCalculator : public PerformanceCalculator
 {
     int amount_for(const Performance& perf) const override
     {
@@ -30,7 +30,7 @@ class TragedyCalculator : public Calculator
     }
 };
 
-class ComedyCalculator : public Calculator
+class ComedyCalculator : public PerformanceCalculator
 {
     int amount_for(const Performance& perf) const override
     {
@@ -44,13 +44,13 @@ class ComedyCalculator : public Calculator
 
     int volume_credits_for(const Performance& perf) const override
     {
-        int volume_credits = Calculator::volume_credits_for(perf);
+        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
         volume_credits += perf.audience / 5;
         return volume_credits;
     }
 };
 
-const Calculator& get_calculator(Play::Type type)
+const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
     switch (type) {
     case Play::Type::Tragedy: { static const TragedyCalculator calc; return calc; }
@@ -74,7 +74,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     auto enrich_performance = [&](const auto& perf)
     {
         const auto& play = play_for(perf);
-        const auto& calc = get_calculator(play.type);
+        const auto& calc = get_performance_calculator(play.type);
 
         return EnrichedPerformance{
             .base = perf,
