@@ -179,8 +179,9 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 Note however that, unlike the original JavaScript,
-we have already extracted a free function `usd` for formatting money like `$1,730.00`.
-(The function `usd` makes use of a locale for formatting money,
+we have already extracted a free function `usd` for formatting a monetary value into
+a string like `$1,730.00`.
+(The function `usd` makes use of a locale for monetary formatting,
 which is, strictly speaking, not portable but seems to work just fine.)
 
 At this moment, running tests of course gives a "green" output like the following
@@ -333,11 +334,12 @@ When we did the extraction to the function `amount_for`
 (which is to be precise a lambda but we no longer distinguish between lambda and function),
 we had to deal with three variables
 `perf`, `play`, and `this_amount` that would go out of scope.
-The first two variables `perf` and `play` are not modified so that we pass them as the parameters;
-the last one `this_amount` is the only modified variable so that we return it from the function.
+The first two variables `perf` and `play` are not modified so that we pass them as parameters;
+the last one `this_amount` is the only modified variable (always initialized to zero)
+so that we return it from the function.
 
 Let us now consider where the variable `play` has come from:
-`play` is computed from `perf` so that there was actually no need to pass it
+`play` has been computed from `perf` so that there was actually no need to pass it
 as a parameter at all.
 _Extract Function_ can be less complicated (because less variables will go out of scope),
 if we have removed such temporary variables in advance;
@@ -529,7 +531,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 Note that the extracted function `render_plain_text` takes
 an empty parameter `data` of type `StatementData`,
 to which we are going to put the intermediate data (the results of the first phase)
-required to render the statement (the second phase)
+required for rendering the statement (the second phase)
 so that `render_plain_text` depends only on `StatementData`.
 
 It would be straightforward to simply put `customer` and `performances` of `Invoice`
@@ -538,7 +540,7 @@ In order to remove the `plays` parameter, however,
 we need to somehow "enrich" each element of `performances`
 so that, from the "enriched" performance, one can get the corresponding `play`
 (this refactoring is unfortunately not given its name in the first chapter of Fowler (2018)
-but is one the most useful refactorings named _Combine Functions into Transform_
+but is one of the most useful refactorings named _Combine Functions into Transform_
 listed in Chapter 6: A First Set of Refactorings).
 The function `render_plain_text` now takes only one parameter of type `StatementData`
 that has been modified so as to contain "enriched" performances
@@ -664,9 +666,9 @@ in order for `enrich_performance` to "enrich" a performance with the correspondi
 The "enrichment" could be done differently, e.g., by inheritance,
 but here I have made `EnrichedPerformance` simply have a member named `base` that is
 a reference to the original `Performance`.
-This way, we can avoid a deep copy at the cost that, for an "enriched" performance `perf`,
+This way, we can avoid deep copy at the cost that, for an "enriched" performance `perf`,
 we have to say `perf.base.XYZ` to access the original member `XYZ`
-(as we have done in `render_plain_text`).
+(as we have done so in the above).
 
 Note also that, in C++23, one can use
 [`std::ranges::to`](https://en.cppreference.com/w/cpp/ranges/to)
@@ -680,7 +682,7 @@ as shown above
 (see [here](https://timur.audio/how-to-make-a-container-from-a-c20-range)
 for more discussions).
 
-Similarly, let us further "enrich" `EnrichedPerformance`
+Let us further "enrich" `EnrichedPerformance`
 with new fields `amount` and `volume_credits`;
 we move `amount_for` and `volume_credits_for` again back to
 the `statement` function to populate them.
