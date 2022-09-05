@@ -4,9 +4,16 @@ A C++ project for the first refactoring example of Fowler (2018).
 
 ## Features
 
-* Based on the "theatrical players" (rather than "video rental store") exercise from the first chapter (freely available from [here](https://www.thoughtworks.com/books/refactoring2)) of Fowler (2018)
-* C++20 (rather than JavaScript) with some tests ([GoogleTest](https://github.com/google/googletest))
-* Two branches: `master` (starting point before refactoring) vs. `refactored` (fully refactored state), with some [refactoring memo](doc/memo.md)
+* Based on the "theatrical players" (rather than "video rental store") exercise
+  from the first chapter
+  (freely available from [here](https://www.thoughtworks.com/books/refactoring2))
+  of Fowler (2018)
+* C++20 (rather than JavaScript) with some tests
+  (with [GoogleTest](https://github.com/google/googletest))
+* Two branches: `master` (starting point before refactoring) vs.
+  `refactored` (fully refactored state),
+  with some [refactoring memo](doc/memo.md) that describes the key refactoring steps and
+  the difference between C++ and JavaScript
 
 ## How to configure, build, and test
 
