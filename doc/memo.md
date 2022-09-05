@@ -791,10 +791,10 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
         std::back_inserter(enriched_performances));
     assert(std::size(enriched_performances) == std::size(invoice.performances));
 
-    auto total_amount = std::accumulate(
+    const auto total_amount = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
         0, [](int sum, const auto& perf) { return sum + perf.amount; });
-    auto total_volume_credits = std::accumulate(
+    const auto total_volume_credits = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
         0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
 
@@ -872,10 +872,10 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
         std::back_inserter(enriched_performances));
     assert(std::size(enriched_performances) == std::size(invoice.performances));
 
-    auto total_amount = std::accumulate(
+    const auto total_amount = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
         0, [](int sum, const auto& perf) { return sum + perf.amount; });
-    auto total_volume_credits = std::accumulate(
+    const auto total_volume_credits = std::accumulate(
         std::cbegin(enriched_performances), std::cend(enriched_performances),
         0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
 
