@@ -9,11 +9,10 @@ A C++ project for the first refactoring example of Fowler (2018).
   (freely available from [here](https://www.thoughtworks.com/books/refactoring2))
   of Fowler (2018)
 * C++20 (rather than JavaScript) with some tests
-  (with [GoogleTest](https://github.com/google/googletest))
-* Two branches: `master` (starting point before refactoring) vs.
-  `refactored` (fully refactored state),
-  with some [refactoring memo](doc/memo.md) that describes the key refactoring steps and
-  the difference between C++ and JavaScript
+  (using [GoogleTest](https://github.com/google/googletest))
+* Two branches: `master` (the starting point before refactoring) vs.
+  `refactored` (the fully refactored state)
+  with some [refactoring memo](doc/memo.md) describing the key refactoring steps
 
 ## How to configure, build, and test
 
