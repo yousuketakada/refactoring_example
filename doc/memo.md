@@ -920,7 +920,7 @@ Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
 contain some already complex conditional logic (`switch` and `if`) by `Play::Type`;
-such a conditional logic can be represented naturally by using polymorphism
+such conditional logic can be represented naturally by using polymorphism
 (_Replace Conditional with Polymorphism_; this refactoring can be considered a form of the
 [strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)).
 
