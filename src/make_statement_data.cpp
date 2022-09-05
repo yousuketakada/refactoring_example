@@ -20,6 +20,7 @@ protected:
 
 class TragedyCalculator : public PerformanceCalculator
 {
+public:
     int amount_for(const Performance& perf) const override
     {
         int amount = 40000;
@@ -32,6 +33,7 @@ class TragedyCalculator : public PerformanceCalculator
 
 class ComedyCalculator : public PerformanceCalculator
 {
+public:
     int amount_for(const Performance& perf) const override
     {
         int amount = 30000;
