@@ -28,16 +28,16 @@ mainly focusing on the difference between JavaScript and C++.
 ## The starting point
 
 The source files relevant to our refactoring are the following
-(all under the [`src`](/src) directory).
+(all under the [`src`](../src) directory).
 
-* [`statement_test.cpp`](/src/statement_test.cpp):
+* [`statement_test.cpp`](../src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
   we input some `plays` and `invoice` to a function `statement`;
   and compare the output with `expected_text` for equality.
-* [`statement.h`](/src/statement.h):
+* [`statement.h`](../src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
   and declare `statement`.
-* [`statement.cpp`](/src/statement.cpp):
+* [`statement.cpp`](../src/statement.cpp):
   The source file where we define `statement`.
 
 The data stored in JSON files like `plays.json` and `invoices.json`
@@ -185,7 +185,7 @@ a string like `$1,730.00`.
 which is, strictly speaking, not portable but seems to work just fine.)
 
 At this moment, running tests of course gives a "green" output like the following
-(see [README](/README.md#how-to-configure-build-and-test) for
+(see [README](../README.md#how-to-configure-build-and-test) for
 how to configure the project with CMake).
 
 ```
@@ -902,10 +902,10 @@ let us also separate the source file to reflect the logical structure.
 Specifically, we add new header and source files for `make_statement_data`
 (and make `statement.cpp` where we define `statement` include that header):
 
-* [`make_statement_data.h`](/src/make_statement_data.h):
+* [`make_statement_data.h`](../src/make_statement_data.h):
   The header file where we define types `EnrichedPerformance` and `StatementData`; and
   declare `make_statement_data`.
-* [`make_statement_data.cpp`](/src/make_statement_data.cpp):
+* [`make_statement_data.cpp`](../src/make_statement_data.cpp):
   The source file where we define `make_statement_data`.
 
 Now that the `statement` function is implemented simply by composing the two phases,
@@ -914,14 +914,17 @@ one can easily implement an HTML version of `statement` by
 composing the existing calculation phase and a new HTML formatting phase;
 its implementation and test are omitted from this memo for brevity.
 
-## Reorganizing the conditional logic by `Play::Type`
+## Reorganizing the conditional logic on `Play::Type`
 
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
-contain some already complex conditional logic (`switch` and `if`) by `Play::Type`;
+contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
 such conditional logic can be represented naturally by using polymorphism
-(_Replace Conditional with Polymorphism_; this refactoring can be considered a form of the
-[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)).
+(_Replace Conditional with Polymorphism_).
+This refactoring can be considered a form of the
+[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
+because we shall dynamically select a suitable set of calculation algorithms
+upon `Play::Type` for each performance.
 
 TODO
