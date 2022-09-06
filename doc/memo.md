@@ -923,13 +923,25 @@ its implementation and test are omitted from this memo for brevity.
 
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
-The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
+The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
 contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
-such conditional logic can be represented naturally by using polymorphism
-(_Replace Conditional with Polymorphism_).
-This refactoring can be considered a form of the
+such conditional logic can be represented naturally by using polymorphism.
+Called _Replace Conditional with Polymorphism_,
+this refactoring can be considered a form of the
 [strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
 because we shall dynamically select a suitable set of calculation algorithms
-upon `Play::Type` for each performance.
+based upon `Play::Type` for each performance.
+
+In order to apply _Replace Conditional with Polymorphism_,
+we first create an empty class named `PerformanceCalculator` and
+move those functions that implement the conditional logic,
+i.e., `amount_for` and `volume_credits_for`, to that class as member functions:
+
+```cpp
+// TODO
+```
+
+TODO: Apply _Replace Type Code with Subclasses_ to introduce an inheritance hierarchy
+with derived classes corresponding to `Play::Type`s
 
 TODO
