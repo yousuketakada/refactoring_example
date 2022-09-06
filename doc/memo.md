@@ -205,8 +205,11 @@ Test project C:/Users/yousuke/work/refactoring_example/build
 Total Test time (real) =   0.08 sec
 ```
 
-If we introduce a bug, say, we forget to set the locale correctly in `usd`,
-we indeed get an error or "red" output like the following:
+Note that the test case `UnknownType` verifies the behavior that
+`statement` throws upon an unknown `Play::Type`.
+
+If we introduce a bug, say, we forget to set (or `imbue`) the locale correctly in `usd`,
+we indeed get an error or "red" output:
 
 ```
 $ cmake --build build && ctest --test-dir build --output-on-failure
