@@ -28,16 +28,16 @@ mainly focusing on the difference between JavaScript and C++.
 ## The starting point
 
 The source files relevant to our refactoring are the following
-(all under the [`src`](/src) directory).
+(all under the [`src`](../src) directory).
 
-* [`statement_test.cpp`](/src/statement_test.cpp):
+* [`statement_test.cpp`](../src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
   we input some `plays` and `invoice` to a function `statement`;
   and compare the output with `expected_text` for equality.
-* [`statement.h`](/src/statement.h):
+* [`statement.h`](../src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
   and declare `statement`.
-* [`statement.cpp`](/src/statement.cpp):
+* [`statement.cpp`](../src/statement.cpp):
   The source file where we define `statement`.
 
 The data stored in JSON files like `plays.json` and `invoices.json`
@@ -185,7 +185,7 @@ a string like `$1,730.00`.
 which is, strictly speaking, not portable but seems to work just fine.)
 
 At this moment, running tests of course gives a "green" output like the following
-(see [README](/README.md#how-to-configure-build-and-test) for
+(see [README](../README.md#how-to-configure-build-and-test) for
 how to configure the project with CMake).
 
 ```
@@ -196,17 +196,20 @@ $ cmake --build build && ctest --test-dir build --output-on-failure
 Internal ctest changing into directory: C:/Users/yousuke/work/refactoring_example/build
 Test project C:/Users/yousuke/work/refactoring_example/build
     Start 1: StatementTest.BigCo
-1/2 Test #1: StatementTest.BigCo ..............   Passed    0.03 sec
+1/2 Test #1: StatementTest.BigCo ..............   Passed    0.04 sec
     Start 2: StatementTest.UnknownType
-2/2 Test #2: StatementTest.UnknownType ........   Passed    0.01 sec
+2/2 Test #2: StatementTest.UnknownType ........   Passed    0.02 sec
 
 100% tests passed, 0 tests failed out of 2
 
-Total Test time (real) =   0.06 sec
+Total Test time (real) =   0.08 sec
 ```
 
-If we introduce a bug, say, we forget to set the locale correctly in `usd`,
-we indeed get an error or "red" output like the following:
+Note that the test case `UnknownType` verifies the behavior that
+`statement` throws upon an unknown `Play::Type`.
+
+If we introduce a bug, say, we forget to set (or `imbue`) the locale correctly in `usd`,
+we indeed get an error or "red" output:
 
 ```
 $ cmake --build build && ctest --test-dir build --output-on-failure
@@ -216,14 +219,14 @@ $ cmake --build build && ctest --test-dir build --output-on-failure
 Internal ctest changing into directory: C:/Users/yousuke/work/refactoring_example/build
 Test project C:/Users/yousuke/work/refactoring_example/build
     Start 1: StatementTest.BigCo
-1/2 Test #1: StatementTest.BigCo ..............***Failed    0.01 sec
-Running main() from C:\Users\yousuke\work\refactoring_example\build\_deps\googletest-src\googletest\src\gtest_main.cc
+1/2 Test #1: StatementTest.BigCo ..............***Failed    0.02 sec
+Running main() from gmock_main.cc
 Note: Google Test filter = StatementTest.BigCo
 [==========] Running 1 test from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 1 test from StatementTest
 [ RUN      ] StatementTest.BigCo
-C:\Users\yousuke\work\refactoring_example\src\statement_test.cpp(45): error: Expected equality of these values:
+C:\Users\yousuke\work\refactoring_example\src\statement_test.cpp(48): error: Expected equality of these values:
   actual_text
     Which is: "Statement for BigCo\n  Hamlet: 65000 (55 seats)\n  As You Like It: 58000 (35 seats)\n  Othello: 50000 (40 seats)\nAmount owed is 173000\nYou earned 47 credits\n"
   expected_text
@@ -253,11 +256,11 @@ With diff:
  1 FAILED TEST
 
     Start 2: StatementTest.UnknownType
-2/2 Test #2: StatementTest.UnknownType ........   Passed    0.01 sec
+2/2 Test #2: StatementTest.UnknownType ........   Passed    0.02 sec
 
 50% tests passed, 1 tests failed out of 2
 
-Total Test time (real) =   0.04 sec
+Total Test time (real) =   0.06 sec
 
 The following tests FAILED:
           1 - StatementTest.BigCo (Failed)
@@ -265,7 +268,9 @@ Errors while running CTest
 ```
 
 As Fowler (2018) points out,
-it is important to run tests often while we refactor.
+it is important to run tests often while we refactor:
+A small refactoring step followed by compile-test-commit is
+the basic rhythm of refactoring.
 
 ## Decomposing the `statement` function
 
@@ -497,7 +502,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 The top-level function `statement` now performs only formatting the statement
 whereas the calculation logic has decomposed into nested functions (lambdas).
 
-## Splitting phases of calculation and formatting
+## Splitting the phases of calculation and formatting
 
 Next, we apply _Split Phase_ to divide the `statement` function into two phases:
 the first phase that calculates data required for the statement; and
@@ -902,10 +907,10 @@ let us also separate the source file to reflect the logical structure.
 Specifically, we add new header and source files for `make_statement_data`
 (and make `statement.cpp` where we define `statement` include that header):
 
-* [`make_statement_data.h`](/src/make_statement_data.h):
+* [`make_statement_data.h`](../src/make_statement_data.h):
   The header file where we define types `EnrichedPerformance` and `StatementData`; and
   declare `make_statement_data`.
-* [`make_statement_data.cpp`](/src/make_statement_data.cpp):
+* [`make_statement_data.cpp`](../src/make_statement_data.cpp):
   The source file where we define `make_statement_data`.
 
 Now that the `statement` function is implemented simply by composing the two phases,
@@ -914,6 +919,17 @@ one can easily implement an HTML version of `statement` by
 composing the existing calculation phase and a new HTML formatting phase;
 its implementation and test are omitted from this memo for brevity.
 
-## Reorganizing conditional logic with polymorphism (strategy pattern)
+## Reorganizing the conditional logic on `Play::Type`
+
+Lastly, let us consider refactorings required
+when we add more `Play::Type`s and their calculation logic.
+The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
+contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
+such conditional logic can be represented naturally by using polymorphism
+(_Replace Conditional with Polymorphism_).
+This refactoring can be considered a form of the
+[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
+because we shall dynamically select a suitable set of calculation algorithms
+upon `Play::Type` for each performance.
 
 TODO
