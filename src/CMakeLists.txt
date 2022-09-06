@@ -5,7 +5,7 @@ add_executable(statement_test)
 
 target_link_libraries(crt_check pch)
 target_link_libraries(statement pch)
-target_link_libraries(statement_test pch crt_check statement gtest_main)
+target_link_libraries(statement_test pch crt_check statement GTest::gmock_main)
 
 include(GoogleTest)
 gtest_discover_tests(statement_test)

@@ -3,6 +3,9 @@
 #include "statement.h"
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+using namespace testing;
 
 namespace {
 
@@ -61,16 +64,9 @@ TEST(StatementTest, UnknownType)
         }
     };
 
-    EXPECT_THROW([&]
-    {
-        try {
-            statement(invoice, plays);
-        }
-        catch (const std::runtime_error& e) {
-            EXPECT_EQ(e.what(), "-1: unknown Play::Type"s);
-            throw;
-        }
-    } (), std::runtime_error);
+    EXPECT_THAT(
+        [&] { statement(invoice, plays); },
+        ThrowsMessage<std::runtime_error>(Eq("-1: unknown Play::Type"s)));
 }
 
 }
