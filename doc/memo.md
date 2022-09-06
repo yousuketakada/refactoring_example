@@ -7,9 +7,9 @@ the concepts of refactoring are language agnostic so that
 basically we can employ any other (dynamically- or statically-typed) language equally well;
 see, e.g.,
 
-* https://github.com/ryo-utsunomiya/refactoring-2nd-ts
+* <https://github.com/ryo-utsunomiya/refactoring-2nd-ts>
   for TypeScript
-* https://github.com/emilybache/Theatrical-Players-Refactoring-Kata
+* <https://github.com/emilybache/Theatrical-Players-Refactoring-Kata>
   for a handful of other languages including C++, C#, Go, Java, Python, etc.
 
 This repo is yet another example in C++20,
