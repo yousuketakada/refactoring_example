@@ -268,7 +268,9 @@ Errors while running CTest
 ```
 
 As Fowler (2018) points out,
-it is important to run tests often while we refactor.
+it is important to run tests often while we refactor:
+A small refactoring step followed by compile-test-commit is
+the basic rhythm of refactoring.
 
 ## Decomposing the `statement` function
 
