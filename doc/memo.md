@@ -914,14 +914,17 @@ one can easily implement an HTML version of `statement` by
 composing the existing calculation phase and a new HTML formatting phase;
 its implementation and test are omitted from this memo for brevity.
 
-## Reorganizing the conditional logic by `Play::Type`
+## Reorganizing the conditional logic on `Play::Type`
 
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
-contain some already complex conditional logic (`switch` and `if`) by `Play::Type`;
+contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
 such conditional logic can be represented naturally by using polymorphism
-(_Replace Conditional with Polymorphism_; this refactoring can be considered a form of the
-[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)).
+(_Replace Conditional with Polymorphism_).
+This refactoring can be considered a form of the
+[strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
+because we shall dynamically select a suitable set of calculation algorithms
+upon `Play::Type` for each performance.
 
 TODO
