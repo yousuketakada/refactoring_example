@@ -46,7 +46,7 @@ the following constants found in `statement_test.cpp`
 (Note the use of [designated initializers](https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers),
 which gives the C++ code some resemblance with the original JSON code).
 
-```C++
+```cpp
     const std::map<std::string, Play> plays{
         {"hamlet"s, {.name = "Hamlet"s, .type = Play::Type::Tragedy}},
         {"as-like"s, {.name = "As You Like It"s, .type = Play::Type::Comedy}},
@@ -88,7 +88,7 @@ types like `Play` and `Invoice` must be defined and `statement` be declared;
 one can find those definitions and declaration in `statement.h`
 (Note also that we define the play type `Play::Type` as an enum class rather than string):
 
-```C++
+```cpp
 struct Play
 {
     enum class Type
@@ -118,7 +118,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
 The function `statement` defined in `statement.cpp` is also similar to the original JavaScript:
 
-```C++
+```cpp
 namespace {
 
 auto usd(int amount)
@@ -282,7 +282,7 @@ Although the JavaScript example uses a nested function,
 we have no such a thing in C++;
 let us use a lambda here as the closest alternative:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto amount_for = [](const auto& perf, const auto& play)
@@ -357,7 +357,7 @@ say, `play_for`, after which we apply _Inline Variable_ to `play` to remove it.
 Finally, we apply _Change Function Declaration_ to `amount_for` to remove the `play` parameter.
 All of these yields:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -425,7 +425,7 @@ Similarly, we apply _Extract Function_ and _Replace Temp with Query_
 to the function scope variables `total_amount` and `volume_credits`.
 Finally we have:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -511,7 +511,7 @@ the second phase that renders those calculated data into some particular format
 if the two phases have been clearly separated).
 To this end, we first extract the text rendering function `render_plain_text` from `statement`:
 
-```C++
+```cpp
 struct StatementData {};
 
 auto render_plain_text(
@@ -525,7 +525,7 @@ auto render_plain_text(
 where the omitted function body is actually the same as that of the previous `statement` function
 and let the new `statement` function simply call into `render_plain_text`:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     const StatementData statement_data;
@@ -551,7 +551,7 @@ The function `render_plain_text` now takes only one parameter of type `Statement
 that has been modified so as to contain "enriched" performances
 each of which is of type `EnrichedPerformance`:
 
-```C++
+```cpp
 struct EnrichedPerformance
 {
     const Performance& base;
@@ -634,7 +634,7 @@ auto render_plain_text(const StatementData& data)
 
 The `statement` function populates `StatementData` and passes it to `render_plain_text`:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -697,7 +697,7 @@ we add the corresponding new fields to `StatementData`.
 Making use of those new fields,
 the function `render_plain_text` now does only formatting in its body as intended:
 
-```C++
+```cpp
 struct EnrichedPerformance
 {
     const Performance& base;
@@ -736,7 +736,7 @@ using an appropriate algorithm
 (I wish we could use `std::ranges`-based reduction, which is yet to be standardized,
 but I consider this refactoring a form of _Replace Loop with Pipeline_):
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -817,7 +817,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 We conclude our refactoring of splitting the phases by extracting the first phase
 from the `statement` function to a new function `make_statement_data`:
 
-```C++
+```cpp
 StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -895,7 +895,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
 The `statement` function now reads:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     return render_plain_text(make_statement_data(invoice, plays));
