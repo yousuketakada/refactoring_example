@@ -2,14 +2,12 @@
 
 #include "make_statement_data.h"
 
-StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
-{
-    auto play_for = [&](const auto& perf) -> decltype(auto)
-    {
-        return plays.at(perf.play_id);
-    };
+namespace {
 
-    auto amount_for = [&](const auto& perf)
+class PerformanceCalculator
+{
+public:
+    int amount_for(const EnrichedPerformance& perf) const
     {
         int amount = 0;
         switch (perf.play.type) {
@@ -32,14 +30,24 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
                 static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
         }
         return amount;
-    };
+    }
 
-    auto volume_credits_for = [&](const auto& perf)
+    int volume_credits_for(const EnrichedPerformance& perf) const
     {
         int volume_credits = 0;
         volume_credits += std::max(perf.base.audience - 30, 0);
         if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
         return volume_credits;
+    }
+};
+
+}
+
+StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
     };
 
     auto enrich_performance = [&](const auto& base)
@@ -48,8 +56,9 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .base = base,
             .play = play_for(base)
         };
-        enriched.amount = amount_for(enriched);
-        enriched.volume_credits = volume_credits_for(enriched);
+        const PerformanceCalculator calc;
+        enriched.amount = calc.amount_for(enriched);
+        enriched.volume_credits = calc.volume_credits_for(enriched);
         return enriched;
     };
 
