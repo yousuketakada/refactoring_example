@@ -920,7 +920,7 @@ its implementation and test are omitted from this memo for brevity.
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
-contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
+contain some already complex conditional logic (i.e., `switch` and `if` statements) on `Play::Type`;
 such conditional logic can be represented naturally by using polymorphism.
 Called _Replace Conditional with Polymorphism_,
 this refactoring can be considered a form of the
@@ -928,14 +928,100 @@ this refactoring can be considered a form of the
 because we shall dynamically select a suitable set of calculation algorithms
 based upon `Play::Type` for each performance.
 
-In order to apply _Replace Conditional with Polymorphism_,
-we first create an empty class named `PerformanceCalculator` and
+To apply _Replace Conditional with Polymorphism_,
+we need some class inheritance hierarchy into which we reorganize the conditional logic.
+As a first step, we create an empty class named `PerformanceCalculator` and
 move those functions that implement the conditional logic,
-i.e., `amount_for` and `volume_credits_for`, to that class as member functions:
+i.e., `amount_for` and `volume_credits_for`, to that class as member functions
+(_Combine Functions into Class_):
 
 ```cpp
-// TODO
+class PerformanceCalculator
+{
+public:
+    int amount_for(const EnrichedPerformance& perf) const
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
+        }
+        return amount;
+    }
+
+    int volume_credits_for(const EnrichedPerformance& perf) const
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    }
+};
 ```
+
+where we have made return types and parameter types explicit
+because we are going to declare those members virtual
+and make subclasses override them (`auto` types are ambiguous).
+We then let `enrich_performance` in `make_statement_data` make use of `PerformanceCalculator`:
+
+```cpp
+StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto enrich_performance = [&](const auto& base)
+    {
+        EnrichedPerformance enriched{
+            .base = base,
+            .play = play_for(base)
+        };
+        const PerformanceCalculator calc;
+        enriched.amount = calc.amount_for(enriched);
+        enriched.volume_credits = calc.volume_credits_for(enriched);
+        return enriched;
+    };
+
+    std::vector<EnrichedPerformance> enriched_performances;
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
+
+    const auto total_amount = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.amount; });
+    const auto total_volume_credits = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
+
+    return {
+        .customer = invoice.customer,
+        .performances = std::move(enriched_performances),
+        .total_amount = total_amount,
+        .total_volume_credits = total_volume_credits
+    };
+}
+```
+
+TODO: _Replace Constructor with Factory Function_
 
 TODO: Apply _Replace Type Code with Subclasses_ to introduce an inheritance hierarchy
 with derived classes corresponding to `Play::Type`s
