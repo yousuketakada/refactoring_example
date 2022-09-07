@@ -783,10 +783,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
             .base = base,
             .play = play_for(base)
         };
-
         enriched.amount = amount_for(enriched);
         enriched.volume_credits = volume_credits_for(enriched);
-
         return enriched;
     };
 
@@ -864,10 +862,8 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .base = base,
             .play = play_for(base)
         };
-
         enriched.amount = amount_for(enriched);
         enriched.volume_credits = volume_credits_for(enriched);
-
         return enriched;
     };
 
