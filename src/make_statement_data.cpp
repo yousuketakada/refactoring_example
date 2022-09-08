@@ -7,7 +7,7 @@ namespace {
 class PerformanceCalculator
 {
 public:
-    int amount_for(const EnrichedPerformance& perf) const
+    virtual int amount_for(const EnrichedPerformance& perf) const
     {
         int amount = 0;
         switch (perf.play.type) {
@@ -25,21 +25,37 @@ public:
             amount += 300 * perf.base.audience;
             break;
         default:
-            throw std::runtime_error{std::format(
-                "{}: unknown Play::Type"sv,
-                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
+            assert(0);
         }
         return amount;
     }
 
-    int volume_credits_for(const EnrichedPerformance& perf) const
+    virtual int volume_credits_for(const EnrichedPerformance& perf) const
     {
         int volume_credits = 0;
         volume_credits += std::max(perf.base.audience - 30, 0);
         if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
         return volume_credits;
     }
+
+protected:
+    ~PerformanceCalculator() = default;
 };
+
+class TragedyCalculator : public PerformanceCalculator {};
+class ComedyCalculator : public PerformanceCalculator {};
+
+const PerformanceCalculator& get_performance_calculator(Play::Type type)
+{
+    switch (type) {
+    case Play::Type::Tragedy: { static const TragedyCalculator calc; return calc; }
+    case Play::Type::Comedy: { static const ComedyCalculator calc; return calc; }
+    }
+
+    throw std::runtime_error{std::format(
+        "{}: unknown Play::Type"sv,
+        static_cast<std::underlying_type_t<Play::Type>>(type))};
+}
 
 }
 
@@ -56,7 +72,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .base = base,
             .play = play_for(base)
         };
-        const PerformanceCalculator calc;
+        const auto& calc = get_performance_calculator(enriched.play.type);
         enriched.amount = calc.amount_for(enriched);
         enriched.volume_credits = calc.volume_credits_for(enriched);
         return enriched;
