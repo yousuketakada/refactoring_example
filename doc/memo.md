@@ -920,8 +920,10 @@ its implementation and test are omitted from this memo for brevity.
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
-contain some already complex conditional logic (i.e., `switch` and `if` statements) on `Play::Type`;
-such conditional logic can be represented naturally by using polymorphism.
+contain some already complex conditional logic (i.e., `switch` and `if` statements)
+on `Play::Type` for calculating data about performances;
+such conditional logic can be represented naturally by using polymorphism,
+making it easy to modify the logic or extend it with more categories.
 Called _Replace Conditional with Polymorphism_,
 this refactoring can be considered a form of the
 [strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
@@ -930,9 +932,9 @@ based upon `Play::Type` for each performance.
 
 To apply _Replace Conditional with Polymorphism_,
 we need some class inheritance hierarchy into which we reorganize the conditional logic.
-As a first step, we create an empty class named `PerformanceCalculator` and
-move those functions that implement the conditional logic,
-i.e., `amount_for` and `volume_credits_for`, to that class as member functions
+As a first step, we create a stateless class named `PerformanceCalculator` and
+move those functions that implement the calculation logic for performances,
+i.e., `amount_for` and `volume_credits_for`, into it as member functions
 (_Combine Functions into Class_):
 
 ```cpp
@@ -974,9 +976,9 @@ public:
 };
 ```
 
-where we have made return types and parameter types explicit
-because we are going to declare those members virtual
-and make subclasses override them (`auto` types are ambiguous).
+where we have made the return types and the parameter types of the member functions explicit
+because we are going to declare them virtual
+and make derived classes override them (`auto` types are ambiguous to inherit).
 We then let `enrich_performance` in `make_statement_data` make use of `PerformanceCalculator`:
 
 ```cpp
@@ -1021,9 +1023,97 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 }
 ```
 
-TODO: _Replace Constructor with Factory Function_
+Next, we make `PerformanceCalculator` suitable for a base class
+from which we derive a concrete calculator class
+by declaring its members `amount_for` and `volume_credits_for` virtual and
+its destructor protected
+(so that it cannot be directly instantiated nor destructed except through its derived classes).
+We then define derived calculators each for each `Play::Type`, namely,
+`TragedyCalculator` for `Play::Type::Tragedy` and
+`ComedyCalculator` for `Play::Type::Comedy`
+(although they are empty for now, this is a step toward _Replace Type Code with Subclasses_):
 
-TODO: Apply _Replace Type Code with Subclasses_ to introduce an inheritance hierarchy
-with derived classes corresponding to `Play::Type`s
+```cpp
+class PerformanceCalculator
+{
+public:
+    virtual int amount_for(const EnrichedPerformance& perf) const
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            assert(0);
+        }
+        return amount;
+    }
+
+    virtual int volume_credits_for(const EnrichedPerformance& perf) const
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    }
+
+protected:
+    ~PerformanceCalculator() = default;
+};
+
+class TragedyCalculator : public PerformanceCalculator {};
+class ComedyCalculator : public PerformanceCalculator {};
+
+const PerformanceCalculator& get_performance_calculator(Play::Type type)
+{
+    switch (type) {
+    case Play::Type::Tragedy: { static const TragedyCalculator calc; return calc; }
+    case Play::Type::Comedy: { static const ComedyCalculator calc; return calc; }
+    }
+
+    throw std::runtime_error{std::format(
+        "{}: unknown Play::Type"sv,
+        static_cast<std::underlying_type_t<Play::Type>>(type))};
+}
+```
+
+We have also defined a factory function `get_performance_calculator`
+that selects a suitable implementation of `PerformanceCalculator` based on `Play::Type`
+or throws an exception if the type code is unknown
+(the exception is adopted from `amount_for`).
+We make use of this factory in `enrich_performance` in lieu of the constructor
+(_Replace Constructor with Factory Function_):
+
+```cpp
+    auto enrich_performance = [&](const auto& base)
+    {
+        EnrichedPerformance enriched{
+            .base = base,
+            .play = play_for(base)
+        };
+        const auto& calc = get_performance_calculator(enriched.play.type);
+        enriched.amount = calc.amount_for(enriched);
+        enriched.volume_credits = calc.volume_credits_for(enriched);
+        return enriched;
+    };
+```
+
+Note that, unlike the original JavaScript example,
+we have kept the derived calculators stateless
+so that we can instantiate them statically in the factory
+(otherwise we would have to dynamically allocate one, returning perhaps an `std::unique_ptr`);
+they can be considered the simplest form of
+[flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
 
 TODO
