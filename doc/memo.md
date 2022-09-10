@@ -1023,9 +1023,9 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 }
 ```
 
-Next, we make `PerformanceCalculator` suitable for a base class
-from which we derive a concrete calculator class
-by declaring its members `amount_for` and `volume_credits_for` virtual and
+Next, we make `PerformanceCalculator` suitable as a base class
+from which we derive concrete calculator classes;
+we declare its members `amount_for` and `volume_credits_for` virtual and
 its destructor protected
 (so that it cannot be directly instantiated nor destructed except through its derived classes).
 We then define derived calculators each for each `Play::Type`, namely,
@@ -1089,9 +1089,11 @@ const PerformanceCalculator& get_performance_calculator(Play::Type type)
 ```
 
 We have also defined a factory function `get_performance_calculator`
-that selects a suitable implementation of `PerformanceCalculator` based on `Play::Type`
+that selects an implementation of `PerformanceCalculator` based on `Play::Type`
 or throws an exception if the type code is unknown
-(the exception is adopted from `amount_for`).
+(the throwing statement has been adopted from
+the default label of the switch statement in `amount_for`
+where we have put an assertion instead).
 We make use of this factory in `enrich_performance` in lieu of the constructor
 (_Replace Constructor with Factory Function_):
 
@@ -1110,7 +1112,7 @@ We make use of this factory in `enrich_performance` in lieu of the constructor
 ```
 
 Note that, unlike the original JavaScript example,
-we have kept the derived calculators stateless
+we have kept the derived calculators (i.e., `TragedyCalculator` and `ComedyCalculator`) stateless
 so that we can instantiate them statically in the factory
 (otherwise we would have to dynamically allocate one, returning perhaps an `std::unique_ptr`);
 they can be considered the simplest form of
