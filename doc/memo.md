@@ -1207,3 +1207,13 @@ to modify the existing logic or add new `Play::Type`s
 by revising the hierarchy to which we delegate the necessary calculations.
 
 One can see the final source files in the `refactored` branch.
+Note however that, in order to write this memo,
+I have reproduced the whole refactoring steps again in another branch and
+merged it also to `refactored` so that the history is rather messy.
+To mitigate this, I have put some tags to the second refactoring attempt:
+`refactor2_decompose_statement` for the first commit of
+[Decomposing the `statement` function](#decomposing-the-statement-function);
+`refactor2_split_phase`
+[Splitting the phases of calculation and formatting](#splitting-the-phases-of-calculation-and-formatting);
+`refactor2_reorganize_conditional_logic`
+[Reorganizing the conditional logic on `Play::Type`](#reorganizing-the-conditional-logic-on-playtype).
