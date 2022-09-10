@@ -11,10 +11,7 @@ public:
 
     virtual int volume_credits_for(const EnrichedPerformance& perf) const
     {
-        int volume_credits = 0;
-        volume_credits += std::max(perf.base.audience - 30, 0);
-        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
-        return volume_credits;
+        return std::max(perf.base.audience - 30, 0);
     }
 
 protected:
@@ -45,6 +42,13 @@ public:
         }
         amount += 300 * perf.base.audience;
         return amount;
+    }
+
+    int volume_credits_for(const EnrichedPerformance& perf) const override
+    {
+        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
+        volume_credits += perf.base.audience / 5;
+        return volume_credits;
     }
 };
 
