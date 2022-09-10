@@ -7,11 +7,11 @@ namespace {
 class PerformanceCalculator
 {
 public:
-    virtual int amount_for(const EnrichedPerformance& perf) const = 0;
+    virtual int amount_for(const Performance& perf) const = 0;
 
-    virtual int volume_credits_for(const EnrichedPerformance& perf) const
+    virtual int volume_credits_for(const Performance& perf) const
     {
-        return std::max(perf.base.audience - 30, 0);
+        return std::max(perf.audience - 30, 0);
     }
 
 protected:
@@ -21,11 +21,11 @@ protected:
 class TragedyCalculator : public PerformanceCalculator
 {
 public:
-    int amount_for(const EnrichedPerformance& perf) const override
+    int amount_for(const Performance& perf) const override
     {
         int amount = 40000;
-        if (perf.base.audience > 30) {
-            amount += 1000 * (perf.base.audience - 30);
+        if (perf.audience > 30) {
+            amount += 1000 * (perf.audience - 30);
         }
         return amount;
     }
@@ -34,20 +34,20 @@ public:
 class ComedyCalculator : public PerformanceCalculator
 {
 public:
-    int amount_for(const EnrichedPerformance& perf) const override
+    int amount_for(const Performance& perf) const override
     {
         int amount = 30000;
-        if (perf.base.audience > 20) {
-            amount += 10000 + 500 * (perf.base.audience - 20);
+        if (perf.audience > 20) {
+            amount += 10000 + 500 * (perf.audience - 20);
         }
-        amount += 300 * perf.base.audience;
+        amount += 300 * perf.audience;
         return amount;
     }
 
-    int volume_credits_for(const EnrichedPerformance& perf) const override
+    int volume_credits_for(const Performance& perf) const override
     {
         int volume_credits = PerformanceCalculator::volume_credits_for(perf);
-        volume_credits += perf.base.audience / 5;
+        volume_credits += perf.audience / 5;
         return volume_credits;
     }
 };
@@ -80,8 +80,8 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .play = play_for(base)
         };
         const auto& calc = get_performance_calculator(enriched.play.type);
-        enriched.amount = calc.amount_for(enriched);
-        enriched.volume_credits = calc.volume_credits_for(enriched);
+        enriched.amount = calc.amount_for(base);
+        enriched.volume_credits = calc.volume_credits_for(base);
         return enriched;
     };
 
