@@ -7,9 +7,9 @@ the concepts of refactoring are language agnostic so that
 basically we can employ any other (dynamically- or statically-typed) language equally well;
 see, e.g.,
 
-* https://github.com/ryo-utsunomiya/refactoring-2nd-ts
+* <https://github.com/ryo-utsunomiya/refactoring-2nd-ts>
   for TypeScript
-* https://github.com/emilybache/Theatrical-Players-Refactoring-Kata
+* <https://github.com/emilybache/Theatrical-Players-Refactoring-Kata>
   for a handful of other languages including C++, C#, Go, Java, Python, etc.
 
 This repo is yet another example in C++20,
@@ -46,7 +46,7 @@ the following constants found in `statement_test.cpp`
 (Note the use of [designated initializers](https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers),
 which gives the C++ code some resemblance with the original JSON code).
 
-```C++
+```cpp
     const std::map<std::string, Play> plays{
         {"hamlet"s, {.name = "Hamlet"s, .type = Play::Type::Tragedy}},
         {"as-like"s, {.name = "As You Like It"s, .type = Play::Type::Comedy}},
@@ -88,7 +88,7 @@ types like `Play` and `Invoice` must be defined and `statement` be declared;
 one can find those definitions and declaration in `statement.h`
 (Note also that we define the play type `Play::Type` as an enum class rather than string):
 
-```C++
+```cpp
 struct Play
 {
     enum class Type
@@ -118,7 +118,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
 The function `statement` defined in `statement.cpp` is also similar to the original JavaScript:
 
-```C++
+```cpp
 namespace {
 
 auto usd(int amount)
@@ -196,17 +196,20 @@ $ cmake --build build && ctest --test-dir build --output-on-failure
 Internal ctest changing into directory: C:/Users/yousuke/work/refactoring_example/build
 Test project C:/Users/yousuke/work/refactoring_example/build
     Start 1: StatementTest.BigCo
-1/2 Test #1: StatementTest.BigCo ..............   Passed    0.03 sec
+1/2 Test #1: StatementTest.BigCo ..............   Passed    0.04 sec
     Start 2: StatementTest.UnknownType
-2/2 Test #2: StatementTest.UnknownType ........   Passed    0.01 sec
+2/2 Test #2: StatementTest.UnknownType ........   Passed    0.02 sec
 
 100% tests passed, 0 tests failed out of 2
 
-Total Test time (real) =   0.06 sec
+Total Test time (real) =   0.08 sec
 ```
 
-If we introduce a bug, say, we forget to set the locale correctly in `usd`,
-we indeed get an error or "red" output like the following:
+Note that the test case `UnknownType` verifies the behavior that
+`statement` throws upon an unknown `Play::Type`.
+
+If we introduce a bug, say, we forget to set (or `imbue`) the locale correctly in `usd`,
+we indeed get an error or "red" output:
 
 ```
 $ cmake --build build && ctest --test-dir build --output-on-failure
@@ -216,14 +219,14 @@ $ cmake --build build && ctest --test-dir build --output-on-failure
 Internal ctest changing into directory: C:/Users/yousuke/work/refactoring_example/build
 Test project C:/Users/yousuke/work/refactoring_example/build
     Start 1: StatementTest.BigCo
-1/2 Test #1: StatementTest.BigCo ..............***Failed    0.01 sec
-Running main() from C:\Users\yousuke\work\refactoring_example\build\_deps\googletest-src\googletest\src\gtest_main.cc
+1/2 Test #1: StatementTest.BigCo ..............***Failed    0.02 sec
+Running main() from gmock_main.cc
 Note: Google Test filter = StatementTest.BigCo
 [==========] Running 1 test from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 1 test from StatementTest
 [ RUN      ] StatementTest.BigCo
-C:\Users\yousuke\work\refactoring_example\src\statement_test.cpp(45): error: Expected equality of these values:
+C:\Users\yousuke\work\refactoring_example\src\statement_test.cpp(48): error: Expected equality of these values:
   actual_text
     Which is: "Statement for BigCo\n  Hamlet: 65000 (55 seats)\n  As You Like It: 58000 (35 seats)\n  Othello: 50000 (40 seats)\nAmount owed is 173000\nYou earned 47 credits\n"
   expected_text
@@ -253,11 +256,11 @@ With diff:
  1 FAILED TEST
 
     Start 2: StatementTest.UnknownType
-2/2 Test #2: StatementTest.UnknownType ........   Passed    0.01 sec
+2/2 Test #2: StatementTest.UnknownType ........   Passed    0.02 sec
 
 50% tests passed, 1 tests failed out of 2
 
-Total Test time (real) =   0.04 sec
+Total Test time (real) =   0.06 sec
 
 The following tests FAILED:
           1 - StatementTest.BigCo (Failed)
@@ -265,7 +268,9 @@ Errors while running CTest
 ```
 
 As Fowler (2018) points out,
-it is important to run tests often while we refactor.
+it is important to run tests often while we refactor:
+A small refactoring step followed by compile-test-commit is
+the basic rhythm of refactoring.
 
 ## Decomposing the `statement` function
 
@@ -277,7 +282,7 @@ Although the JavaScript example uses a nested function,
 we have no such a thing in C++;
 let us use a lambda here as the closest alternative:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto amount_for = [](const auto& perf, const auto& play)
@@ -352,7 +357,7 @@ say, `play_for`, after which we apply _Inline Variable_ to `play` to remove it.
 Finally, we apply _Change Function Declaration_ to `amount_for` to remove the `play` parameter.
 All of these yields:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -420,7 +425,7 @@ Similarly, we apply _Extract Function_ and _Replace Temp with Query_
 to the function scope variables `total_amount` and `volume_credits`.
 Finally we have:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -506,7 +511,7 @@ the second phase that renders those calculated data into some particular format
 if the two phases have been clearly separated).
 To this end, we first extract the text rendering function `render_plain_text` from `statement`:
 
-```C++
+```cpp
 struct StatementData {};
 
 auto render_plain_text(
@@ -520,7 +525,7 @@ auto render_plain_text(
 where the omitted function body is actually the same as that of the previous `statement` function
 and let the new `statement` function simply call into `render_plain_text`:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     const StatementData statement_data;
@@ -546,7 +551,7 @@ The function `render_plain_text` now takes only one parameter of type `Statement
 that has been modified so as to contain "enriched" performances
 each of which is of type `EnrichedPerformance`:
 
-```C++
+```cpp
 struct EnrichedPerformance
 {
     const Performance& base;
@@ -629,7 +634,7 @@ auto render_plain_text(const StatementData& data)
 
 The `statement` function populates `StatementData` and passes it to `render_plain_text`:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -692,7 +697,7 @@ we add the corresponding new fields to `StatementData`.
 Making use of those new fields,
 the function `render_plain_text` now does only formatting in its body as intended:
 
-```C++
+```cpp
 struct EnrichedPerformance
 {
     const Performance& base;
@@ -731,7 +736,7 @@ using an appropriate algorithm
 (I wish we could use `std::ranges`-based reduction, which is yet to be standardized,
 but I consider this refactoring a form of _Replace Loop with Pipeline_):
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -778,10 +783,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
             .base = base,
             .play = play_for(base)
         };
-
         enriched.amount = amount_for(enriched);
         enriched.volume_credits = volume_credits_for(enriched);
-
         return enriched;
     };
 
@@ -812,7 +815,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 We conclude our refactoring of splitting the phases by extracting the first phase
 from the `statement` function to a new function `make_statement_data`:
 
-```C++
+```cpp
 StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     auto play_for = [&](const auto& perf) -> decltype(auto)
@@ -859,10 +862,8 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
             .base = base,
             .play = play_for(base)
         };
-
         enriched.amount = amount_for(enriched);
         enriched.volume_credits = volume_credits_for(enriched);
-
         return enriched;
     };
 
@@ -890,7 +891,7 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
 
 The `statement` function now reads:
 
-```C++
+```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
 {
     return render_plain_text(make_statement_data(invoice, plays));
@@ -918,13 +919,291 @@ its implementation and test are omitted from this memo for brevity.
 
 Lastly, let us consider refactorings required
 when we add more `Play::Type`s and their calculation logic.
-The functions (lambdas) `amount_for` and `volume_credits_for` in `make_statement_data`
-contain some already complex conditional logic (`switch` and `if`) on `Play::Type`;
-such conditional logic can be represented naturally by using polymorphism
-(_Replace Conditional with Polymorphism_).
-This refactoring can be considered a form of the
+The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
+contain some already complex conditional logic (i.e., `switch` and `if` statements)
+on `Play::Type` for calculating data about performances;
+such conditional logic can be represented naturally by using polymorphism,
+making it easy to modify the logic or extend it with more categories.
+Called _Replace Conditional with Polymorphism_,
+this refactoring can be considered a form of the
 [strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
 because we shall dynamically select a suitable set of calculation algorithms
-upon `Play::Type` for each performance.
+based upon `Play::Type` for each performance.
 
-TODO
+To apply _Replace Conditional with Polymorphism_,
+we need some class inheritance hierarchy into which we reorganize the conditional logic.
+As a first step, we create a stateless class named `PerformanceCalculator` and
+move those functions that implement the calculation logic for performances,
+i.e., `amount_for` and `volume_credits_for`, into it as member functions
+(_Combine Functions into Class_):
+
+```cpp
+class PerformanceCalculator
+{
+public:
+    int amount_for(const EnrichedPerformance& perf) const
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            throw std::runtime_error{std::format(
+                "{}: unknown Play::Type"sv,
+                static_cast<std::underlying_type_t<Play::Type>>(perf.play.type))};
+        }
+        return amount;
+    }
+
+    int volume_credits_for(const EnrichedPerformance& perf) const
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    }
+};
+```
+
+where we have made the return types and the parameter types of the member functions explicit
+because we are going to declare them virtual
+and make derived classes override them (`auto` types are ambiguous to inherit).
+We then let `enrich_performance` in `make_statement_data` make use of `PerformanceCalculator`:
+
+```cpp
+StatementData make_statement_data(const Invoice& invoice, const std::map<std::string, Play>& plays)
+{
+    auto play_for = [&](const auto& perf) -> decltype(auto)
+    {
+        return plays.at(perf.play_id);
+    };
+
+    auto enrich_performance = [&](const auto& base)
+    {
+        EnrichedPerformance enriched{
+            .base = base,
+            .play = play_for(base)
+        };
+        const PerformanceCalculator calc;
+        enriched.amount = calc.amount_for(enriched);
+        enriched.volume_credits = calc.volume_credits_for(enriched);
+        return enriched;
+    };
+
+    std::vector<EnrichedPerformance> enriched_performances;
+    std::ranges::copy(
+        invoice.performances | std::views::transform(enrich_performance),
+        std::back_inserter(enriched_performances));
+    assert(std::size(enriched_performances) == std::size(invoice.performances));
+
+    const auto total_amount = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.amount; });
+    const auto total_volume_credits = std::accumulate(
+        std::cbegin(enriched_performances), std::cend(enriched_performances),
+        0, [](int sum, const auto& perf) { return sum + perf.volume_credits; });
+
+    return {
+        .customer = invoice.customer,
+        .performances = std::move(enriched_performances),
+        .total_amount = total_amount,
+        .total_volume_credits = total_volume_credits
+    };
+}
+```
+
+Next, we make `PerformanceCalculator` suitable as a base class
+from which we derive concrete calculator classes;
+we declare its members `amount_for` and `volume_credits_for` virtual and
+its destructor protected
+(so that it cannot be directly instantiated nor destructed except through its derived classes).
+We then define derived calculators each for each `Play::Type`, namely,
+`TragedyCalculator` for `Play::Type::Tragedy` and
+`ComedyCalculator` for `Play::Type::Comedy`
+(although they are empty for now, this is a step toward _Replace Type Code with Subclasses_):
+
+```cpp
+class PerformanceCalculator
+{
+public:
+    virtual int amount_for(const EnrichedPerformance& perf) const
+    {
+        int amount = 0;
+        switch (perf.play.type) {
+        case Play::Type::Tragedy:
+            amount = 40000;
+            if (perf.base.audience > 30) {
+                amount += 1000 * (perf.base.audience - 30);
+            }
+            break;
+        case Play::Type::Comedy:
+            amount = 30000;
+            if (perf.base.audience > 20) {
+                amount += 10000 + 500 * (perf.base.audience - 20);
+            }
+            amount += 300 * perf.base.audience;
+            break;
+        default:
+            assert(0);
+        }
+        return amount;
+    }
+
+    virtual int volume_credits_for(const EnrichedPerformance& perf) const
+    {
+        int volume_credits = 0;
+        volume_credits += std::max(perf.base.audience - 30, 0);
+        if (Play::Type::Comedy == perf.play.type) { volume_credits += perf.base.audience / 5; }
+        return volume_credits;
+    }
+
+protected:
+    ~PerformanceCalculator() = default;
+};
+
+class TragedyCalculator : public PerformanceCalculator {};
+class ComedyCalculator : public PerformanceCalculator {};
+
+const PerformanceCalculator& get_performance_calculator(Play::Type type)
+{
+    switch (type) {
+    case Play::Type::Tragedy: { static const TragedyCalculator calc; return calc; }
+    case Play::Type::Comedy: { static const ComedyCalculator calc; return calc; }
+    }
+
+    throw std::runtime_error{std::format(
+        "{}: unknown Play::Type"sv,
+        static_cast<std::underlying_type_t<Play::Type>>(type))};
+}
+```
+
+We have also defined a factory function `get_performance_calculator`
+that selects an implementation of `PerformanceCalculator` based on `Play::Type`
+or throws an exception if the type code is unknown
+(the throwing statement has been adopted from
+the default label of the switch statement in `amount_for`
+where we have put an assertion instead).
+We make use of this factory in `enrich_performance` in lieu of the constructor
+(_Replace Constructor with Factory Function_):
+
+```cpp
+    auto enrich_performance = [&](const auto& base)
+    {
+        EnrichedPerformance enriched{
+            .base = base,
+            .play = play_for(base)
+        };
+        const auto& calc = get_performance_calculator(enriched.play.type);
+        enriched.amount = calc.amount_for(enriched);
+        enriched.volume_credits = calc.volume_credits_for(enriched);
+        return enriched;
+    };
+```
+
+Note that, unlike the original JavaScript example,
+we have kept the derived calculators (i.e., `TragedyCalculator` and `ComedyCalculator`) stateless
+so that we can instantiate them statically in the factory
+(otherwise we would have to dynamically allocate one, returning perhaps an `std::unique_ptr`);
+they can be considered the simplest form of
+[flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
+
+Now that we have set up the inheritance hierarchy for performance calculators,
+we finally apply _Replace Conditional with Polymorphism_.
+First, we make `TragedyCalculator` and `ComedyCalculator` override `amount_for`, to which
+we move the corresponding logic;
+after which we can declare `PerformanceCalculator::amount_for` pure virtual.
+Next, let the calculators also override `volume_credits_for`.
+Notice however that there is a common implementation for it and
+we have to implement a special case only for `ComedyCalculator`.
+So, we leave the common implementation in `PerformanceCalculator::volume_credits_for`
+and specialize it in `ComedyCalculator::volume_credits_for`,
+taking advantage of the common implementation.
+The base and derived calculators now read:
+
+```cpp
+class PerformanceCalculator
+{
+public:
+    virtual int amount_for(const Performance& perf) const = 0;
+
+    virtual int volume_credits_for(const Performance& perf) const
+    {
+        return std::max(perf.audience - 30, 0);
+    }
+
+protected:
+    ~PerformanceCalculator() = default;
+};
+
+class TragedyCalculator : public PerformanceCalculator
+{
+public:
+    int amount_for(const Performance& perf) const override
+    {
+        int amount = 40000;
+        if (perf.audience > 30) {
+            amount += 1000 * (perf.audience - 30);
+        }
+        return amount;
+    }
+};
+
+class ComedyCalculator : public PerformanceCalculator
+{
+public:
+    int amount_for(const Performance& perf) const override
+    {
+        int amount = 30000;
+        if (perf.audience > 20) {
+            amount += 10000 + 500 * (perf.audience - 20);
+        }
+        amount += 300 * perf.audience;
+        return amount;
+    }
+
+    int volume_credits_for(const Performance& perf) const override
+    {
+        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
+        volume_credits += perf.audience / 5;
+        return volume_credits;
+    }
+};
+```
+
+where we have replaced `EnrichedPerformance` with `Performance`
+because the calculators no longer depend on
+the "enriched" part (i.e., `Play::Type`) of the performance.
+In `enrich_performance`, we now can build `EnrichedPerformance` at once:
+
+```cpp
+    auto enrich_performance = [&](const auto& perf)
+    {
+        const auto& play = play_for(perf);
+        const auto& calc = get_performance_calculator(play.type);
+        return EnrichedPerformance{
+            .base = perf,
+            .play = play,
+            .amount = calc.amount_for(perf),
+            .volume_credits = calc.volume_credits_for(perf)
+        };
+    };
+```
+
+Now that we have reorganized the complex conditional logic on `Play::Type`
+into the inheritance hierarchy of performance calculators,
+it is much more manageable a task than before
+to modify the existing logic or add new `Play::Type`s
+by revising the hierarchy to which we delegate the necessary calculations.
+
+One can see the final source files in the `refactored` branch.
