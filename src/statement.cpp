@@ -30,6 +30,7 @@ auto render_plain_text(const StatementData& data)
     return std::move(oss).str();
 }
 
+// FIXME: escape HTML special characters
 auto render_html(const StatementData& data)
 {
     std::ostringstream oss;

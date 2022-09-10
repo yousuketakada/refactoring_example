@@ -77,7 +77,6 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
     {
         const auto& play = play_for(perf);
         const auto& calc = get_performance_calculator(play.type);
-
         return EnrichedPerformance{
             .base = perf,
             .play = play,
