@@ -7,21 +7,7 @@ namespace {
 class PerformanceCalculator
 {
 public:
-    virtual int amount_for(const EnrichedPerformance& perf) const
-    {
-        int amount = 0;
-        switch (perf.play.type) {
-        case Play::Type::Tragedy:
-            assert(0);
-            break;
-        case Play::Type::Comedy:
-            assert(0);
-            break;
-        default:
-            assert(0);
-        }
-        return amount;
-    }
+    virtual int amount_for(const EnrichedPerformance& perf) const = 0;
 
     virtual int volume_credits_for(const EnrichedPerformance& perf) const
     {
