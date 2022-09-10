@@ -1118,4 +1118,92 @@ so that we can instantiate them statically in the factory
 they can be considered the simplest form of
 [flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
 
-TODO
+Now that we have set up the inheritance hierarchy for performance calculators,
+we finally apply _Replace Conditional with Polymorphism_.
+First, we make `TragedyCalculator` and `ComedyCalculator` override `amount_for`, to which
+we move the corresponding logic;
+after which we can declare `PerformanceCalculator::amount_for` pure virtual.
+Next, let the calculators also override `volume_credits_for`.
+Notice however that there is a common implementation for it and
+we have to implement a special case only for `ComedyCalculator`.
+So, we leave the common implementation in `PerformanceCalculator::volume_credits_for`
+and specialize it in `ComedyCalculator::volume_credits_for`,
+taking advantage of the common implementation.
+The base and derived calculators now read:
+
+```cpp
+class PerformanceCalculator
+{
+public:
+    virtual int amount_for(const Performance& perf) const = 0;
+
+    virtual int volume_credits_for(const Performance& perf) const
+    {
+        return std::max(perf.audience - 30, 0);
+    }
+
+protected:
+    ~PerformanceCalculator() = default;
+};
+
+class TragedyCalculator : public PerformanceCalculator
+{
+public:
+    int amount_for(const Performance& perf) const override
+    {
+        int amount = 40000;
+        if (perf.audience > 30) {
+            amount += 1000 * (perf.audience - 30);
+        }
+        return amount;
+    }
+};
+
+class ComedyCalculator : public PerformanceCalculator
+{
+public:
+    int amount_for(const Performance& perf) const override
+    {
+        int amount = 30000;
+        if (perf.audience > 20) {
+            amount += 10000 + 500 * (perf.audience - 20);
+        }
+        amount += 300 * perf.audience;
+        return amount;
+    }
+
+    int volume_credits_for(const Performance& perf) const override
+    {
+        int volume_credits = PerformanceCalculator::volume_credits_for(perf);
+        volume_credits += perf.audience / 5;
+        return volume_credits;
+    }
+};
+```
+
+where we have replaced `EnrichedPerformance` with `Performance`
+because the calculators no longer depend on
+the "enriched" part (i.e., `Play::Type`) of the performance.
+In `enrich_performance`, we now can build `EnrichedPerformance` at once:
+
+```cpp
+    auto enrich_performance = [&](const auto& perf)
+    {
+        const auto& play = play_for(perf);
+        const auto& calc = get_performance_calculator(play.type);
+        return EnrichedPerformance{
+            .base = perf,
+            .play = play,
+            .amount = calc.amount_for(perf),
+            .volume_credits = calc.volume_credits_for(perf)
+        };
+    };
+```
+
+Now that we have reorganized the complex conditional logic on `Play::Type`
+into the inheritance hierarchy of performance calculators,
+it is much more manageable a task than before
+to modify the existing logic or add new `Play::Type`s
+by revising the hierarchy to which we delegate the necessary calculations.
+
+One can see the final source files in the `refactored` branch.
