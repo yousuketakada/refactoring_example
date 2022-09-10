@@ -15,11 +15,7 @@ public:
             assert(0);
             break;
         case Play::Type::Comedy:
-            amount = 30000;
-            if (perf.base.audience > 20) {
-                amount += 10000 + 500 * (perf.base.audience - 20);
-            }
-            amount += 300 * perf.base.audience;
+            assert(0);
             break;
         default:
             assert(0);
@@ -52,7 +48,19 @@ public:
     }
 };
 
-class ComedyCalculator : public PerformanceCalculator {};
+class ComedyCalculator : public PerformanceCalculator
+{
+public:
+    int amount_for(const EnrichedPerformance& perf) const override
+    {
+        int amount = 30000;
+        if (perf.base.audience > 20) {
+            amount += 10000 + 500 * (perf.base.audience - 20);
+        }
+        amount += 300 * perf.base.audience;
+        return amount;
+    }
+};
 
 const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
