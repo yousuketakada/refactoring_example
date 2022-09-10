@@ -73,16 +73,16 @@ StatementData make_statement_data(const Invoice& invoice, const std::map<std::st
         return plays.at(perf.play_id);
     };
 
-    auto enrich_performance = [&](const auto& base)
+    auto enrich_performance = [&](const auto& perf)
     {
-        EnrichedPerformance enriched{
-            .base = base,
-            .play = play_for(base)
+        const auto& play = play_for(perf);
+        const auto& calc = get_performance_calculator(play.type);
+        return EnrichedPerformance{
+            .base = perf,
+            .play = play,
+            .amount = calc.amount_for(perf),
+            .volume_credits = calc.volume_credits_for(perf)
         };
-        const auto& calc = get_performance_calculator(enriched.play.type);
-        enriched.amount = calc.amount_for(base);
-        enriched.volume_credits = calc.volume_credits_for(base);
-        return enriched;
     };
 
     std::vector<EnrichedPerformance> enriched_performances;
