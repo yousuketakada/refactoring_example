@@ -24,7 +24,7 @@ in order to minimize the risks of refactoring
 (introducing subtle bugs, breaking the code for a long time, etc.),
 I have tried to refactor with the "one small step at a time" principle in mind
 and made as frequent commits as possible (without squashing).
-In what follows, I shall relate a few significant steps of refactoring,
+In what follows, I shall relate a few significant steps of the refactoring,
 mainly focusing on the difference between JavaScript and C++.
 
 ## The starting point
@@ -35,14 +35,14 @@ The source files relevant to our refactoring are the following
 * [`statement_test.cpp`](../src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
   we input some `plays` and `invoice` to the `statement` function;
-  and compare the output string with the expected output `expected_text` for equality.
+  and compare the output string with the expected output for equality.
 * [`statement.h`](../src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
   and declare `statement`.
 * [`statement.cpp`](../src/statement.cpp):
   The source file where we define `statement`.
 
-The data stored in JSON files like `plays.json` and `invoices.json`
+The data stored in the JSON files `plays.json` and `invoices.json`
 for the original JavaScript example correspond to
 the following constants found in `statement_test.cpp`
 (Note the use of [designated initializers](https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers),
@@ -435,7 +435,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 
 where we have written the return type of `play_for` explicitly as
 [`decltype(auto)`](https://en.cppreference.com/w/cpp/language/auto)
-so as to return a reference to `Play` (i.e., `const Play&`), not a value (`Play`).
+so as to return a reference to `Play` (i.e., `const Play&`), not a copy-constructed value.
 
 It is worth noting here that
 [_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
@@ -445,7 +445,7 @@ Since a temporary is locally scoped and thus only useful in that scope,
 overusing temporaries tends to "encourage" long, complex functions.
 So, it is generally a good thing to remove temporaries,
 at least, at an early stage of refactoring.
-After we have better structured the code, we can do performance tuning easier.
+After we have better structured the code, we can do performance tuning more easily.
 So, let us do the performance tunning later (should there remain any performance problem).
 
 Since we have eliminated the variable `play`,
@@ -533,7 +533,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 The top-level function `statement` now performs only formatting the statement
-whereas the calculation logic has decomposed into nested functions (lambdas).
+whereas the calculation logic has decomposed into a handful of nested functions (lambdas).
 
 ## Splitting the phases of calculation and formatting
 
@@ -557,7 +557,7 @@ auto render_plain_text(
 }
 ```
 
-where the omitted function body is actually the same as that of the previous `statement` function
+where the omitted function body is actually the same as that of the previous `statement` function;
 and let the new `statement` function simply call into `render_plain_text`:
 
 ```cpp
@@ -580,7 +580,7 @@ In order to remove the `plays` parameter, however,
 we need to somehow "enrich" each element of `performances`
 so that, from the "enriched" performance, one can get the corresponding `play`.
 This refactoring is unfortunately not given its name in the first chapter of Fowler (2018)
-but is one of the most useful refactorings named
+but is one of the most useful refactorings called
 [_Combine Functions into Transform_](https://refactoring.com/catalog/combineFunctionsIntoTransform.html)
 listed in Chapter 6: A First Set of Refactorings.
 
@@ -713,14 +713,14 @@ but here I have made `EnrichedPerformance` simply have a member named `base` tha
 a reference to the original `Performance`.
 This way, we can avoid deep copy at the cost that, for an "enriched" performance `perf`,
 we have to say `perf.base.XYZ` to access the original member `XYZ`
-(as we have done so in the above).
+(as we have done so in the code above).
 
 Note also that, in C++23, one can use
 [`std::ranges::to`](https://en.cppreference.com/w/cpp/ranges/to)
-to convert a range to a container
+to convert a [range](https://en.cppreference.com/w/cpp/ranges/range) to a container
 (in this case, `invoice.performances | std::views::transform(enrich_performance)` to
 `std::vector<EnrichedPerformance>`),
-but, in C++20, the most universal way to convert a range to an
+but, in C++20, the most universally applicable way to convert a range to an
 [std::vector](https://en.cppreference.com/w/cpp/container/vector) would be to use
 [std::back_insert_iterator](https://en.cppreference.com/w/cpp/iterator/back_insert_iterator)
 as shown above
@@ -1140,7 +1140,7 @@ or throws an exception if the type code is unknown
 (the exception has been adopted from
 the default clause of the switch statement in `amount_for`
 where we have put an assertion instead).
-We make use of this factory in `enrich_performance` in lieu of the constructor
+In `enrich_performance`, we make use of this factory in lieu of the constructor
 ([_Replace Constructor with Factory Function_](https://refactoring.com/catalog/replaceConstructorWithFactoryFunction.html)):
 
 ```cpp
@@ -1164,19 +1164,20 @@ so that we can instantiate them statically in the factory
 they can be considered the simplest form of
 [flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
 
-Now that we have set up the inheritance hierarchy for performance calculators,
+Now that we have set up the inheritance hierarchy for the performance calculators,
 we finally apply
 [_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html).
-First, we make `TragedyCalculator` and `ComedyCalculator` override `amount_for`, to which
-we move the corresponding logic;
-after which we can declare `PerformanceCalculator::amount_for` pure virtual.
+First, we make `TragedyCalculator` and `ComedyCalculator` override `amount_for`,
+to each of which we move the corresponding clause of the switch statement;
+after that we can declare `PerformanceCalculator::amount_for` pure virtual
+(with no implementation).
 Next, let the calculators also override `volume_credits_for`.
 Notice however that there is a common implementation for it and
 we have to implement a special case only for `ComedyCalculator`.
 So, we leave the common implementation in `PerformanceCalculator::volume_credits_for`
 and specialize it in `ComedyCalculator::volume_credits_for`,
 taking advantage of the common implementation inherited.
-The base and derived calculators now read:
+The base and the derived calculators now read:
 
 ```cpp
 class PerformanceCalculator
@@ -1248,7 +1249,7 @@ In `enrich_performance`, we now can build `EnrichedPerformance` at once:
 ```
 
 Now that we have reorganized in a structured manner the complex conditional logic on `Play::Type`
-into the inheritance hierarchy of performance calculators and
+into the inheritance hierarchy of the performance calculators and
 delegated the necessary calculations to them,
 it is much more manageable a task than before
 to modify the existing logic or add new `Play::Type`s with their own logic.
