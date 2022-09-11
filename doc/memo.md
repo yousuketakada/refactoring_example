@@ -9,10 +9,12 @@ see, e.g.,
 
 * <https://github.com/ryo-utsunomiya/refactoring-2nd-ts>
   for TypeScript
+  (with [a series of articles](https://qiita.com/ryo511/items/761210a2a6ed5689ef54)
+  in Japanese), and
 * <https://github.com/emilybache/Theatrical-Players-Refactoring-Kata>
   for a handful of other languages including C++, C#, Go, Java, Python, etc.
 
-This repo is yet another example in C++20,
+This repo is yet another example in [C++20](https://en.cppreference.com/w/cpp/20),
 where the `master` branch corresponds to "the starting point" and
 `refactored` to the fully refactored state.
 Comparing `refactored` with `master`,
@@ -32,8 +34,8 @@ The source files relevant to our refactoring are the following
 
 * [`statement_test.cpp`](../src/statement_test.cpp):
   The source file containing a simple test case named `BigCo`, in which
-  we input some `plays` and `invoice` to a function `statement`;
-  and compare the output with `expected_text` for equality.
+  we input some `plays` and `invoice` to the `statement` function;
+  and compare the output string with the expected output `expected_text` for equality.
 * [`statement.h`](../src/statement.h):
   The header file where we define types `Play`, `Performance`, and `Invoice`;
   and declare `statement`.
@@ -72,7 +74,8 @@ which gives the C++ code some resemblance with the original JSON code).
     };
 ```
 
-With those constants, `statement(invoice, plays)` gives the same expected text:
+With those constants, `statement(invoice, plays)` gives the same expected text
+as the JavaScript `statement` function:
 
 ```
 Statement for BigCo
@@ -86,7 +89,7 @@ You earned 47 credits
 Since C++ is statically-typed,
 types like `Play` and `Invoice` must be defined and `statement` be declared;
 one can find those definitions and declaration in `statement.h`
-(Note also that we define the play type `Play::Type` as an enum class rather than string):
+(Note that we define the play type `Play::Type` as an enum class rather than a string):
 
 ```cpp
 struct Play
@@ -116,7 +119,7 @@ struct Invoice
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
 ```
 
-The function `statement` defined in `statement.cpp` is also similar to the original JavaScript:
+The `statement` function defined in `statement.cpp` is again similar to the original JavaScript:
 
 ```cpp
 namespace {
@@ -206,9 +209,10 @@ Total Test time (real) =   0.08 sec
 ```
 
 Note that the test case `UnknownType` verifies the behavior that
-`statement` throws upon an unknown `Play::Type`.
+`statement` throws upon an unknown `Play::Type`
+(as the original JavaScript `statement` does).
 
-If we introduce a bug, say, we forget to set (or `imbue`) the locale correctly in `usd`,
+If we introduce a bug, say, we forget to set (or `imbue`) the locale in `usd`,
 we indeed get an error or "red" output:
 
 ```
@@ -268,19 +272,22 @@ Errors while running CTest
 ```
 
 As Fowler (2018) points out,
-it is important to run tests often while we refactor:
+it is important to run tests often while we refactor
+so that we notice as early as possible when we break the code:
 A small refactoring step followed by compile-test-commit is
 the basic rhythm of refactoring.
 
 ## Decomposing the `statement` function
 
-The first refactoring we apply to `statement` is _Extract Function_.
+The first refactoring we apply to `statement` is
+[_Extract Function_](https://refactoring.com/catalog/extractFunction.html).
 Specifically, we extract the switch statement in the middle
 that calculates the charge for a performance
 to some new function, namely, `amount_for`.
 Although the JavaScript example uses a nested function,
 we have no such a thing in C++;
-let us use a lambda here as the closest alternative:
+let us use a [lambda](https://en.cppreference.com/w/cpp/language/lambda) here
+as the closest alternative:
 
 ```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
@@ -346,15 +353,24 @@ so that we return it from the function.
 Let us now consider where the variable `play` has come from:
 `play` has been computed from `perf` so that there was actually no need to pass it
 as a parameter at all.
-_Extract Function_ can be less complicated (because less variables will go out of scope),
+[_Extract Function_](https://refactoring.com/catalog/extractFunction.html)
+can be less complicated (because less variables will go out of scope)
 if we have removed such temporary variables in advance;
-this is another useful refactoring called _Replace Temp with Query_.
+this is another useful refactoring called
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html).
 
-We can apply _Replace Temp with Query_ to the variable `play`
+We can apply
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+to the variable `play`
 in a series of refactoring moves.
 We first extract the right hand side of the statement declaring `play` to a function,
-say, `play_for`, after which we apply _Inline Variable_ to `play` to remove it.
-Finally, we apply _Change Function Declaration_ to `amount_for` to remove the `play` parameter.
+say, `play_for` ([_Extract Function_](https://refactoring.com/catalog/extractFunction.html)),
+after which we apply
+[_Inline Variable_](https://refactoring.com/catalog/inlineVariable.html)
+to `play` to remove it.
+Finally, we apply
+[_Change Function Declaration_](https://refactoring.com/catalog/changeFunctionDeclaration.html)
+to `amount_for` to remove the `play` parameter.
 All of these yields:
 
 ```cpp
@@ -417,19 +433,28 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
-It is worth noting here that _Replace Temp with Query_ may have a performance impact.
+where we have written the return type of `play_for` explicitly as
+[`decltype(auto)`](https://en.cppreference.com/w/cpp/language/auto)
+so as to return a reference to `Play` (i.e., `const Play&`), not a value (`Play`).
+
+It is worth noting here that
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+may have a performance impact.
 Most of the time, however, this is not the case.
 Since a temporary is locally scoped and thus only useful in that scope,
 overusing temporaries tends to "encourage" long, complex functions.
-It is generally a good thing to remove them, at least, at an early stage of refactoring.
-After we better structure the code, we can do performance tuning easier
-(should there remain any performance problem).
+So, it is generally a good thing to remove temporaries,
+at least, at an early stage of refactoring.
+After we have better structured the code, we can do performance tuning easier.
+So, let us do the performance tunning later (should there remain any performance problem).
 
 Since we have eliminated the variable `play`,
 we can now easily extract the function `volume_credits_for`
 that calculates the volume credits for a performance.
-_Replace Temp with Query_ also applies to `this_amount`.
-Similarly, we apply _Extract Function_ and _Replace Temp with Query_
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+also applies to `this_amount`.
+Similarly, we apply
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
 to the function scope variables `total_amount` and `volume_credits`.
 Finally we have:
 
@@ -512,7 +537,9 @@ whereas the calculation logic has decomposed into nested functions (lambdas).
 
 ## Splitting the phases of calculation and formatting
 
-Next, we apply _Split Phase_ to divide the `statement` function into two phases:
+Next, we apply
+[_Split Phase_](https://refactoring.com/catalog/splitPhase.html)
+to divide the `statement` function into two phases:
 the first phase that calculates data required for the statement; and
 the second phase that renders those calculated data into some particular format
 (i.e., text for now but it is easy to support more formats such as HTML
@@ -551,11 +578,15 @@ It would be straightforward to simply put `customer` and `performances` of `Invo
 to `StatementData` so as to remove the `invoice` parameter of `render_plain_text`.
 In order to remove the `plays` parameter, however,
 we need to somehow "enrich" each element of `performances`
-so that, from the "enriched" performance, one can get the corresponding `play`
-(this refactoring is unfortunately not given its name in the first chapter of Fowler (2018)
-but is one of the most useful refactorings named _Combine Functions into Transform_
-listed in Chapter 6: A First Set of Refactorings).
-The function `render_plain_text` now takes only one parameter of type `StatementData`
+so that, from the "enriched" performance, one can get the corresponding `play`.
+This refactoring is unfortunately not given its name in the first chapter of Fowler (2018)
+but is one of the most useful refactorings named
+[_Combine Functions into Transform_](https://refactoring.com/catalog/combineFunctionsIntoTransform.html)
+listed in Chapter 6: A First Set of Refactorings.
+
+Having applied
+[_Combine Functions into Transform_](https://refactoring.com/catalog/combineFunctionsIntoTransform.html),
+we can let the function `render_plain_text` take only one parameter of type `StatementData`
 that has been modified so as to contain "enriched" performances
 each of which is of type `EnrichedPerformance`:
 
@@ -673,7 +704,8 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
-where we have moved the function `play_for` back to `statement` (_Move Function_)
+where we have moved the function `play_for` back to `statement`
+([_Move Function_](https://refactoring.com/catalog/moveFunction.html))
 in order for `enrich_performance` to "enrich" a performance with the corresponding `play`.
 
 The "enrichment" could be done differently, e.g., by inheritance,
@@ -740,9 +772,11 @@ auto render_plain_text(const StatementData& data)
 ```
 
 In `statement`, let us take this opportunity to remove raw accumulation loops
-using an appropriate algorithm
+using an appropriate algorithm, i.e.,
+[std::accumulate](https://en.cppreference.com/w/cpp/algorithm/accumulate)
 (I wish we could use `std::ranges`-based reduction, which is yet to be standardized,
-but I consider this refactoring a form of _Replace Loop with Pipeline_):
+but I consider this refactoring a form of
+[_Replace Loop with Pipeline_](https://refactoring.com/catalog/replaceLoopWithPipeline.html)):
 
 ```cpp
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays)
@@ -932,18 +966,20 @@ contain some already complex conditional logic (i.e., `switch` and `if` statemen
 on `Play::Type` for calculating data about performances;
 such conditional logic can be represented naturally by using polymorphism,
 making it easy to modify the logic or extend it with more categories.
-Called _Replace Conditional with Polymorphism_,
+Called
+[_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html),
 this refactoring can be considered a form of the
 [strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)
 because we shall dynamically select a suitable set of calculation algorithms
 based upon `Play::Type` for each performance.
 
-To apply _Replace Conditional with Polymorphism_,
+To apply
+[_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html),
 we need some class inheritance hierarchy into which we reorganize the conditional logic.
 As a first step, we create a stateless class named `PerformanceCalculator` and
 move those functions that implement the calculation logic for performances,
 i.e., `amount_for` and `volume_credits_for`, into it as member functions
-(_Combine Functions into Class_):
+([_Combine Functions into Class_](https://refactoring.com/catalog/combineFunctionsIntoClass.html)):
 
 ```cpp
 class PerformanceCalculator
@@ -1040,7 +1076,8 @@ We then define concrete calculators derived from `PerformanceCalculator`
 each for each `Play::Type`, namely,
 `TragedyCalculator` for `Play::Type::Tragedy` and
 `ComedyCalculator` for `Play::Type::Comedy`
-(although they are empty for now, this is a step toward _Replace Type Code with Subclasses_):
+(although they are empty for now, this is a step toward
+[_Replace Type Code with Subclasses_](https://refactoring.com/catalog/replaceTypeCodeWithSubclasses.html)):
 
 ```cpp
 class PerformanceCalculator
@@ -1097,14 +1134,14 @@ const PerformanceCalculator& get_performance_calculator(Play::Type type)
 }
 ```
 
-We have also defined a factory function `get_performance_calculator`
+where we have also defined a factory function `get_performance_calculator`
 that selects an implementation of `PerformanceCalculator` based on `Play::Type`
 or throws an exception if the type code is unknown
-(the throwing statement has been adopted from
-the default label of the switch statement in `amount_for`
+(the exception has been adopted from
+the default clause of the switch statement in `amount_for`
 where we have put an assertion instead).
 We make use of this factory in `enrich_performance` in lieu of the constructor
-(_Replace Constructor with Factory Function_):
+([_Replace Constructor with Factory Function_](https://refactoring.com/catalog/replaceConstructorWithFactoryFunction.html)):
 
 ```cpp
     auto enrich_performance = [&](const auto& base)
@@ -1128,7 +1165,8 @@ they can be considered the simplest form of
 [flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
 
 Now that we have set up the inheritance hierarchy for performance calculators,
-we finally apply _Replace Conditional with Polymorphism_.
+we finally apply
+[_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html).
 First, we make `TragedyCalculator` and `ComedyCalculator` override `amount_for`, to which
 we move the corresponding logic;
 after which we can declare `PerformanceCalculator::amount_for` pure virtual.
@@ -1137,7 +1175,7 @@ Notice however that there is a common implementation for it and
 we have to implement a special case only for `ComedyCalculator`.
 So, we leave the common implementation in `PerformanceCalculator::volume_credits_for`
 and specialize it in `ComedyCalculator::volume_credits_for`,
-taking advantage of the common implementation.
+taking advantage of the common implementation inherited.
 The base and derived calculators now read:
 
 ```cpp
@@ -1209,20 +1247,20 @@ In `enrich_performance`, we now can build `EnrichedPerformance` at once:
     };
 ```
 
-Now that we have reorganized the complex conditional logic on `Play::Type`
-into the inheritance hierarchy of performance calculators,
+Now that we have reorganized in a structured manner the complex conditional logic on `Play::Type`
+into the inheritance hierarchy of performance calculators and
+delegated the necessary calculations to them,
 it is much more manageable a task than before
-to modify the existing logic or add new `Play::Type`s
-by revising the hierarchy to which we delegate the necessary calculations.
+to modify the existing logic or add new `Play::Type`s with their own logic.
 
 One can see the final source files in the `refactored` branch.
 Note however that, in order to write this memo,
 I have reproduced the whole refactoring steps again in another branch and
 merged it also to `refactored` so that the history is rather messy.
 To mitigate this, I have put some tags to the second refactoring attempt:
-`refactor2_decompose_statement` for the first commit of
+`refactor2_decompose_statement` to the first commit for
 [Decomposing the `statement` function](#decomposing-the-statement-function);
-`refactor2_split_phase`
+`refactor2_split_phase` for
 [Splitting the phases of calculation and formatting](#splitting-the-phases-of-calculation-and-formatting);
-`refactor2_reorganize_conditional_logic`
+`refactor2_reorganize_conditional_logic` for
 [Reorganizing the conditional logic on `Play::Type`](#reorganizing-the-conditional-logic-on-playtype).
