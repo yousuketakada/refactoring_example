@@ -1028,7 +1028,8 @@ from which we derive concrete calculator classes;
 we declare its members `amount_for` and `volume_credits_for` virtual and
 its destructor protected
 (so that it cannot be directly instantiated nor destructed except through its derived classes).
-We then define derived calculators each for each `Play::Type`, namely,
+We then define concrete calculators derived from `PerformanceCalculator`
+each for each `Play::Type`, namely,
 `TragedyCalculator` for `Play::Type::Tragedy` and
 `ComedyCalculator` for `Play::Type::Comedy`
 (although they are empty for now, this is a step toward _Replace Type Code with Subclasses_):
@@ -1072,8 +1073,8 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator {};
-class ComedyCalculator : public PerformanceCalculator {};
+class TragedyCalculator final : public PerformanceCalculator {};
+class ComedyCalculator final : public PerformanceCalculator {};
 
 const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
@@ -1146,7 +1147,7 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator
+class TragedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
@@ -1159,7 +1160,7 @@ public:
     }
 };
 
-class ComedyCalculator : public PerformanceCalculator
+class ComedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
