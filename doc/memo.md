@@ -417,6 +417,14 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
+It is worth noting here that _Replace Temp with Query_ may have a performance impact.
+Most of the time, however, this is not the case.
+Since a temporary is locally scoped and thus only useful in that scope,
+overusing temporaries tends to "encourage" long, complex functions.
+It is generally a good thing to remove them, at least, at an early stage of refactoring.
+After we better structure the code, we can do performance tuning easier
+(should there remain any performance problem).
+
 Since we have eliminated the variable `play`,
 we can now easily extract the function `volume_credits_for`
 that calculates the volume credits for a performance.
@@ -1028,7 +1036,8 @@ from which we derive concrete calculator classes;
 we declare its members `amount_for` and `volume_credits_for` virtual and
 its destructor protected
 (so that it cannot be directly instantiated nor destructed except through its derived classes).
-We then define derived calculators each for each `Play::Type`, namely,
+We then define concrete calculators derived from `PerformanceCalculator`
+each for each `Play::Type`, namely,
 `TragedyCalculator` for `Play::Type::Tragedy` and
 `ComedyCalculator` for `Play::Type::Comedy`
 (although they are empty for now, this is a step toward _Replace Type Code with Subclasses_):
@@ -1072,8 +1081,8 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator {};
-class ComedyCalculator : public PerformanceCalculator {};
+class TragedyCalculator final : public PerformanceCalculator {};
+class ComedyCalculator final : public PerformanceCalculator {};
 
 const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
@@ -1146,7 +1155,7 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator
+class TragedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
@@ -1159,7 +1168,7 @@ public:
     }
 };
 
-class ComedyCalculator : public PerformanceCalculator
+class ComedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
