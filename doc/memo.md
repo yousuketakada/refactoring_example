@@ -417,6 +417,14 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 }
 ```
 
+It is worth noting here that _Replace Temp with Query_ may have a performance impact.
+Most of the time, however, this is not the case.
+Since a temporary is locally scoped and thus only useful in that scope,
+overusing temporaries tends to "encourage" long, complex functions.
+It is generally a good thing to remove them, at least, at an early stage of refactoring.
+After we better structure the code, we can do performance tuning easier
+(should there remain any performance problem).
+
 Since we have eliminated the variable `play`,
 we can now easily extract the function `volume_credits_for`
 that calculates the volume credits for a performance.
