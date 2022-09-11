@@ -42,8 +42,8 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator {};
-class ComedyCalculator : public PerformanceCalculator {};
+class TragedyCalculator final : public PerformanceCalculator {};
+class ComedyCalculator final : public PerformanceCalculator {};
 
 const PerformanceCalculator& get_performance_calculator(Play::Type type)
 {
