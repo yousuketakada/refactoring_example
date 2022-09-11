@@ -18,7 +18,7 @@ protected:
     ~PerformanceCalculator() = default;
 };
 
-class TragedyCalculator : public PerformanceCalculator
+class TragedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
@@ -31,7 +31,7 @@ public:
     }
 };
 
-class ComedyCalculator : public PerformanceCalculator
+class ComedyCalculator final : public PerformanceCalculator
 {
 public:
     int amount_for(const Performance& perf) const override
