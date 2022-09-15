@@ -437,16 +437,37 @@ where we have written the return type of `play_for` explicitly as
 [`decltype(auto)`](https://en.cppreference.com/w/cpp/language/auto)
 so as to return a reference to `Play` (i.e., `const Play&`), not a copy-constructed value.
 
-It is worth noting here that
+It is worth taking some time here to take a closer look at an otherwise overlooked refactoring
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html),
+which I think is _the_ most useful and important of all the refactorings Fowler (2018) presents.
+
+First, it should be noted that, although one may worry about the performance degradation
 [_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
-may have a performance impact.
-Most of the time, however, this is not the case.
+could incur, this is not the case most of the time.
+In any case, let us ignore such performance implications while we refactor and
+do the performance tunning later (should there remain any performance problem);
+this works because, after we have better structured the code,
+we can do performance tuning more easily.
+
+Now that we understand that
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+is almost harmless and indeed facilitates
+[_Extract Function_](https://refactoring.com/catalog/extractFunction.html)
+(because less local variables go out of scope),
+I would like to go a step further to argue that
+_temporaries are the root of all evil_,
+as Fowler (2018) suggests
+(and [Steve Yegge strongly agrees](https://sites.google.com/site/steveyegge2/transformation)).
 Since a temporary is locally scoped and thus only useful in that scope,
-overusing temporaries tends to "encourage" long, complex functions.
+overusing temporaries (even if they are immutable constants)
+tends to "encourage" long, complex functions
+because otherwise one cannot easily use those temporaries.
+In contrast, a function usually resides in a larger (say, class) scope and
+can be reached by any function in that scope.
 So, it is generally a good thing to remove temporaries,
 at least, at an early stage of refactoring.
-After we have better structured the code, we can do performance tuning more easily.
-So, let us do the performance tunning later (should there remain any performance problem).
+
+Let us now return to our subject: Refactoring the `statement` function.
 
 Since we have eliminated the variable `play`,
 we can now easily extract the function `volume_credits_for`
