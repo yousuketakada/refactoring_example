@@ -469,6 +469,11 @@ can be reached by any function in that scope.
 So, it is generally a good thing to remove temporaries,
 at least, at an early stage of refactoring.
 
+I hope, with this digression, you have convinced that
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+is certainly an important refactoring,
+whatever subtle or counter-intuitive it is at first sight
+(if not, please consult Fowler (2018) and convince yourself with his own words).
 Let us now return to our subject: Refactoring the `statement` function.
 
 Since we have eliminated the variable `play`,
