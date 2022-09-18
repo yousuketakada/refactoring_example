@@ -119,7 +119,9 @@ struct Invoice
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
 ```
 
-The `statement` function defined in `statement.cpp` is again similar to the original JavaScript:
+The `statement` function defined in `statement.cpp` is again similar to the original JavaScript
+(I have kept the comments as they are including a "downright misleading" one,
+all of which will eventually be remove in the course of our refactoring, though):
 
 ```cpp
 namespace {
