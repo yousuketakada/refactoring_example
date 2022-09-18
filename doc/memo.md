@@ -119,7 +119,9 @@ struct Invoice
 std::string statement(const Invoice& invoice, const std::map<std::string, Play>& plays);
 ```
 
-The `statement` function defined in `statement.cpp` is again similar to the original JavaScript:
+The `statement` function defined in `statement.cpp` is again similar to the original JavaScript
+(I have kept the comments as they are including a "downright misleading" one,
+all of which will eventually be remove in the course of our refactoring, though):
 
 ```cpp
 namespace {
@@ -467,6 +469,11 @@ can be reached by any function in that scope.
 So, it is generally a good thing to remove temporaries,
 at least, at an early stage of refactoring.
 
+I hope, with this digression, you have convinced that
+[_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
+is certainly an important refactoring,
+whatever subtle or counter-intuitive it is at first sight
+(if not, please consult Fowler (2018) and convince yourself with his own words).
 Let us now return to our subject: Refactoring the `statement` function.
 
 Since we have eliminated the variable `play`,
