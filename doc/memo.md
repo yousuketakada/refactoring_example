@@ -472,7 +472,7 @@ at least, at an early stage of refactoring.
 I hope the above digression has convinced you that,
 however subtle or counter-intuitive it looks at first sight,
 [_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
-is certainly an important refactoring
+is certainly an important refactoring on its own
 (if not, please consult Fowler (2018) and convince yourself with his own words).
 Let us now return to our subject: Refactoring the `statement` function.
 
@@ -992,7 +992,8 @@ when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
 contain some already complex conditional logic (i.e., `switch` and `if` statements)
 on `Play::Type` for calculating data about performances;
-such conditional logic can be represented naturally by type polymorphism,
+such conditional logic can be represented naturally by
+[type polymorphism](https://en.cppreference.com/w/cpp/language/object#Polymorphic_objects),
 making it easy to modify the logic or extend it with more categories.
 Called
 [_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html),
