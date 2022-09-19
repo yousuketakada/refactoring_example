@@ -9,8 +9,8 @@ see, e.g.,
 
 * <https://github.com/ryo-utsunomiya/refactoring-2nd-ts>
   for TypeScript
-  (with [a series of articles](https://qiita.com/ryo511/items/761210a2a6ed5689ef54)
-  in Japanese), and
+  with [a series of articles](https://qiita.com/ryo511/items/761210a2a6ed5689ef54)
+  (in Japanese), and
 * <https://github.com/emilybache/Theatrical-Players-Refactoring-Kata>
   for a handful of other languages including C++, C#, Go, Java, Python, etc.
 
@@ -89,7 +89,7 @@ You earned 47 credits
 Since C++ is statically-typed,
 types like `Play` and `Invoice` must be defined and `statement` be declared;
 one can find those definitions and declaration in `statement.h`
-(Note that we define the play type `Play::Type` as an enum class rather than a string):
+(Note that we define the play type as an enum class `Play::Type` rather than a string):
 
 ```cpp
 struct Play
@@ -465,14 +465,14 @@ overusing temporaries (even if they are immutable constants)
 tends to "encourage" long, complex functions
 because otherwise one cannot easily use those temporaries.
 In contrast, a function usually resides in a larger (say, class) scope and
-can be reached by any function in that scope.
+can be reached by any (member) function in that scope.
 So, it is generally a good thing to remove temporaries,
 at least, at an early stage of refactoring.
 
-I hope, with this digression, you have convinced that
+I hope the above digression has convinced you that,
+however subtle or counter-intuitive it looks at first sight,
 [_Replace Temp with Query_](https://refactoring.com/catalog/replaceTempWithQuery.html)
-is certainly an important refactoring,
-whatever subtle or counter-intuitive it is at first sight
+is certainly an important refactoring
 (if not, please consult Fowler (2018) and convince yourself with his own words).
 Let us now return to our subject: Refactoring the `statement` function.
 
@@ -561,7 +561,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 The top-level function `statement` now performs only formatting the statement
-whereas the calculation logic has decomposed into a handful of nested functions (lambdas).
+whereas the other calculation logic has decomposed into a handful of nested functions (lambdas).
 
 ## Splitting the phases of calculation and formatting
 
@@ -992,7 +992,7 @@ when we add more `Play::Type`s and their calculation logic.
 The functions (lambdas) `amount_for` and `volume_credits_for` defined in `make_statement_data`
 contain some already complex conditional logic (i.e., `switch` and `if` statements)
 on `Play::Type` for calculating data about performances;
-such conditional logic can be represented naturally by using polymorphism,
+such conditional logic can be represented naturally by type polymorphism,
 making it easy to modify the logic or extend it with more categories.
 Called
 [_Replace Conditional with Polymorphism_](https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html),
