@@ -1,7 +1,7 @@
 # Refactoring Memo
 
 The first chapter of Fowler (2018) gives a concrete example of
-how we refactor code with some common anti-patterns or "bad smells."
+how we refactor code that exhibits some common anti-patterns or "code smells."
 Although the example is in JavaScript,
 the concepts of refactoring are language agnostic so that
 basically we can employ any other (dynamically- or statically-typed) language equally well;
@@ -120,7 +120,7 @@ std::string statement(const Invoice& invoice, const std::map<std::string, Play>&
 ```
 
 The `statement` function defined in `statement.cpp` is again similar to the original JavaScript
-(I have kept the comments as they are including a "downright misleading" one,
+(I have kept the comments as they are, including a "downright misleading" one,
 all of which will eventually be removed in the course of our refactoring, though):
 
 ```cpp
@@ -1189,7 +1189,8 @@ In `enrich_performance`, we make use of this factory in lieu of the constructor
 Note that, unlike the original JavaScript example,
 we have kept the derived calculators (i.e., `TragedyCalculator` and `ComedyCalculator`) stateless
 so that we can instantiate them statically in the factory
-(otherwise we would have to dynamically allocate one, returning perhaps an `std::unique_ptr`);
+(otherwise we would have to dynamically allocate one,
+returning perhaps an `std::unique_ptr<PerformanceCalculator>`);
 they can be considered the simplest form of
 [flyweight](https://en.wikipedia.org/wiki/Flyweight_pattern) objects.
 
