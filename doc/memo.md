@@ -1,7 +1,7 @@
 # Refactoring Memo
 
 The first chapter of Fowler (2018) gives a concrete example of
-how we refactor code with some common anti-patterns or "bad smells."
+how we refactor code that exhibits some common anti-patterns or "code smells."
 Although the example is in JavaScript,
 the concepts of refactoring are language agnostic so that
 basically we can employ any other (dynamically- or statically-typed) language equally well;
